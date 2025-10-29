@@ -1,11 +1,47 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from "mongoose";
 
-const RestaurantSchema = new Schema({
-  name: String,
-  address: String,
-  coords: { lat: Number, lng: Number }, // for geofence check
-  contact: String
-}, { timestamps: true });
+const restaurantSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    address: {
+      street: String,
+      city: String,
+      state: String,
+      pincode: String,
+    },
+    phone: String,
+    email: String,
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    cuisine: String,
+    priceRange: Number,
+    description: String,
+    isOpen: {
+      type: Boolean,
+      default: true,
+    },
 
-module.exports = mongoose.model('Restaurant', RestaurantSchema);
+    // 👇 New field added
+    serviceStyle: {
+      type: String,
+      enum: [
+        "Fast Food / QSR",
+        "Fast Casual",
+        "Casual Dining",
+        "Fine Dining",
+        "Family Style",
+      ],
+      default: "Casual Dining",
+    },
+  },
+  { timestamps: true }
+);
+
+const Restaurant = mongoose.model("Restaurant", restaurantSchema);
+export default Restaurant;
