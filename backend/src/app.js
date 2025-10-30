@@ -16,5 +16,15 @@ app.use("/api/categories", categoryRoutes);
 
 // Test route
 app.get("/", (req, res) => res.send("🍽️ Smart Restaurant API is running..."));
+import restaurantRoutes from "./routes/restaurantRoutes.js";
+
+
+// Routes
+app.use("/api/v1/restaurants", restaurantRoutes);
+
+// 404
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Route not found" });
+});
 
 export default app;
