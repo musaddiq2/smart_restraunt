@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import orderRoutes from "./routes/OrderRoutes.js";
+
 
 dotenv.config();
 connectDB();
@@ -21,10 +23,23 @@ import restaurantRoutes from "./routes/restaurantRoutes.js";
 
 // Routes
 app.use("/api/v1/restaurants", restaurantRoutes);
+app.use("/api/v1/orders", orderRoutes);
+
 
 // 404
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
 
+
 export default app;
+
+
+
+
+
+
+
+
+
+
