@@ -1,6 +1,21 @@
 // controllers/restaurantController.js
 import Restaurant from "../models/Restaurant.js";
 
+export const createRestaurant = async (req, res) => {
+  try {
+    const restaurant = new Restaurant(req.body);
+    await restaurant.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Restaurant created successfully",
+      data: restaurant,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const updateRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
