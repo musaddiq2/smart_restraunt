@@ -1,13 +1,14 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
+import express from "express";
+import { registerUser, loginUser } from "../controllers/authController.js";
+import { validateRequest } from "../middlewares/validateRequest.js";
+import { registerSchema, loginSchema } from "../validations/userValidation.js";
+
 const router = express.Router();
 
-router.post('/guest', (req, res) => {
-  // payload may contain tableId + restaurantId
-  const { tableId, restaurantId } = req.body;
-  const payload = { role: 'guest', tableId, restaurantId };
-  const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: process.env.JWT_EXPIRES_IN || '6h' });
-  res.json({ success: true, token, expiresIn: process.env.JWT_EXPIRES_IN || '6h' });
-});
+// ✅ Register route with validation
+router.post("/register", validateRequest(registerSchema), registerUser);
 
-module.exports = router;
+// ✅ Login route with validation
+router.post("/login", validateRequest(loginSchema), loginUser);
+
+export default router;

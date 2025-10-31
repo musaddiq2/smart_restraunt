@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import User from "../models/User.js"; // make sure User.js exists in models
+import User from "../models/userModel.js"; // make sure User.js exists in models
 
 // Test route
 router.get("/", (req, res) => {
