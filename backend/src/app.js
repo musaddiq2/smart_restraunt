@@ -23,6 +23,8 @@ app.use(morgan("dev"));
 
 // ✅ API Routes
 app.use("/api/categories", categoryRoutes);
+// Mount Routes
+app.use("/api/v1/categories", categoryRoutes); // ✅ This line is crucial
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1/menus", menuRoutes);
