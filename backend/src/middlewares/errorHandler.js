@@ -1,8 +1,7 @@
-// src/middlewares/errorHandler.js
+// backend/src/middlewares/errorHandler.js
 export const errorHandler = (err, req, res, next) => {
-  console.error("🔥 Error:", err.stack);
-
-  res.status(err.status || 500).json({
+  console.error(`❌ Error: ${err.message}`);
+  res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
   });

@@ -1,23 +1,22 @@
+// backend/src/controllers/authController.js
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 // Generate JWT Token
-const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
-};
+const generateToken = (id, role) =>
+  jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-// ✅ Register (Admin, Staff, or User)
+// ✅ Register Controller
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ success: false, message: "User already exists" });
-    }
+    if (userExists)
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
 
     const user = await User.create({ name, email, password, role });
     const token = generateToken(user._id, user.role);
@@ -38,20 +37,22 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// ✅ Login
+// ✅ Login Controller
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Invalid credentials" });
-    }
+    if (!isMatch)
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
 
     const token = generateToken(user._id, user.role);
     res.status(200).json({

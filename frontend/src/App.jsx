@@ -1,23 +1,26 @@
 // src/App.jsx
 import React from "react";
-import Header from "./components/Navbar";
-import Footer from "./components/Footer";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Menu from "./pages/Menu";
+import Auth from "./pages/Auth";
+import Login from "./pages/Login";  
+import Register from "./pages/Register";      
+// import Cart from "./pages/Cart"; // optional
+import Home from "./pages/Home"; // keep or create a simple Home page
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0b0d17] via-[#111827] to-[#1f2937] text-white">
-      {/* 🏷️ Golden Spoon theme */}
-      <Header />
-      <main className="p-6">
-        <h1 className="text-4xl font-serif text-center text-yellow-400 mb-8">
-          The Golden Spoon
-        </h1>
-        <Menu />
-      </main>
-      <Footer />
-    </div>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/menu" element={<Menu />} />
+         <Route path="/auth" element={<Auth />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        {/* <Route path="/cart" element={<Cart />} /> */}
+      </Routes>
+    </>
   );
 }
-
-export default App;

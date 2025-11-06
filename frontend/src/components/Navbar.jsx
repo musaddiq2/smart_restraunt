@@ -1,122 +1,194 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import {
-  FaUser,
-  FaShoppingCart,
-  FaChevronDown,
-  FaBars,
-  FaTimes,
-} from "react-icons/fa";
+import { FaUser, FaShoppingCart, FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import logo from "../assets/VR_Logo.png";
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const dropdownItems = [
+    { label: "Veg", href: "#veg" },
+    { label: "Non-Veg", href: "#nonveg" },
+    { label: "Rice", href: "#rice" },
+    { label: "Roti", href: "#roti" },
+    { label: "Starter", href: "#starter" },
+    { label: "Dessert", href: "#dessert" },
+    { label: "Cold-Drinks", href: "#drinks" },
+  ];
+
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ${
-        isScrolled
-          ? "bg-white/40 backdrop-blur-lg text-gray-800 shadow-sm"
-          : "bg-gradient-to-r from-[#ff4e50] via-[#ff9f1c] to-[#ff4e50] text-white animate-gradient"
+    <motion.header
+      initial={{ y: -60, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className={`fixed w-full z-50 transition-all duration-700 ${
+        scrolled
+          ? "bg-white/40 backdrop-blur-md text-slate-800 shadow-sm"
+          : "text-white"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <img
-            src="/logo.png" // 👈 place your logo file in public/logo.png
-            alt="VR"
-            className="w-10 h-10 rounded-full object-cover shadow-md"
+            src={logo}
+            alt="VR Logo"
+            className={`w-10 h-10 rounded-full shadow-lg border-2 ${
+              scrolled ? "border-slate-200" : "border-white/60"
+            }`}
           />
-          <h1 className="text-2xl font-bold tracking-wide">
-            Victus<span className="font-light"> Restaurant</span>
-          </h1>
+          <div className="font-bold text-lg md:text-2xl leading-none">
+            <span className="block">Smart</span>
+            <span
+              className={`text-sm font-normal ${
+                scrolled ? "text-slate-700" : "text-white/90"
+              }`}
+            >
+              Restaurant
+            </span>
+          </div>
         </div>
 
-        {/* Desktop Menu */}
-        <ul className="hidden md:flex items-center gap-8 font-medium relative">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8 relative">
           {/* Dropdown Menu */}
-          <li
-            className="relative group cursor-pointer flex items-center gap-1"
+          <div
+            className="relative"
             onMouseEnter={() => setDropdownOpen(true)}
             onMouseLeave={() => setDropdownOpen(false)}
           >
-            <span className="hover:text-[#ff4e50] transition">Menu</span>
-            <FaChevronDown
-              className={`text-sm mt-[2px] transition-transform duration-200 ${
-                dropdownOpen ? "rotate-180 text-[#ff4e50]" : ""
-              }`}
-            />
-            {/* Dropdown Box */}
-            <ul
-              className={`absolute top-8 left-0 bg-white text-gray-700 shadow-lg rounded-md w-48 overflow-hidden transform transition-all duration-200 origin-top ${
-                dropdownOpen ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0"
-              }`}
+            <button
+              className={`flex items-center gap-1 font-semibold ${
+                scrolled ? "text-slate-800" : "text-white"
+              } hover:text-[#ff4e50] transition`}
             >
-              {[
-                "Veg",
-                "Non-Veg",
-                "Chapati",
-                "Rice",
-                "Dessert",
-                "Cold-Drink",
-              ].map((item, i) => (
-                <li
-                  key={i}
-                  className="px-5 py-2 hover:bg-[#ff4e50] hover:text-white transition"
+              Menu <FaChevronDown className="text-xs mt-1" />
+            </button>
+
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-8 left-0 bg-white/95 backdrop-blur-md shadow-lg rounded-lg py-2 w-40 border border-gray-100"
                 >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </li>
+                  {dropdownItems.map((item, i) => (
+                    <a
+                      key={i}
+                      href={item.href}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gradient-to-r hover:from-[#ff4e50] hover:to-[#f9d423] hover:text-white rounded-md transition"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-          <li className="hover:text-[#ff4e50] cursor-pointer transition">
+          <a href="#about" className="hover:text-[#ff4e50] transition">
             About
-          </li>
-          <li className="hover:text-[#ff4e50] cursor-pointer transition">
+          </a>
+          <a href="#chef" className="hover:text-[#ff4e50] transition">
             Chef
-          </li>
-          <li className="hover:text-[#ff4e50] cursor-pointer transition">
+          </a>
+          <a href="#contact" className="hover:text-[#ff4e50] transition">
             Contact
-          </li>
-        </ul>
+          </a>
+        </nav>
 
-        {/* Icons */}
-        <div className="flex items-center gap-5">
-          <FaShoppingCart className="text-xl cursor-pointer hover:text-[#ff4e50] transition" />
-          <FaUser className="text-xl cursor-pointer hover:text-[#ff4e50] transition" />
-          {/* Hamburger for Mobile */}
+        {/* Icons + Hamburger */}
+        <div className="flex items-center gap-4">
           <button
-            className="md:hidden text-2xl"
-            onClick={() => setMenuOpen(!menuOpen)}
+            className={`p-2 rounded-md hover:scale-105 transition ${
+              scrolled ? "text-slate-700" : "text-white"
+            }`}
           >
-            {menuOpen ? <FaTimes /> : <FaBars />}
+            <FaShoppingCart />
+          </button>
+          <button
+            className={`p-2 rounded-md hover:scale-105 transition ${
+              scrolled ? "text-slate-700" : "text-white"
+            }`}
+          >
+            <FaUser />
+          </button>
+
+          {/* Mobile Menu Button */}
+          <button
+            className={`md:hidden p-2 text-xl ${
+              scrolled ? "text-slate-700" : "text-white"
+            }`}
+            onClick={() => setOpen((s) => !s)}
+            aria-label="menu"
+          >
+            {open ? <FaTimes /> : <FaBars />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-white/90 backdrop-blur-md text-gray-800 py-4 shadow-lg animate-fade-in-down">
-          <ul className="flex flex-col items-center gap-4 text-lg">
-            <li className="hover:text-[#ff4e50]">Menu</li>
-            <li className="hover:text-[#ff4e50]">About</li>
-            <li className="hover:text-[#ff4e50]">Chef</li>
-            <li className="hover:text-[#ff4e50]">Contact</li>
-            <li className="hover:text-[#ff4e50]">Cart</li>
-          </ul>
-        </div>
-      )}
-    </nav>
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden md:hidden bg-white/95 text-slate-800"
+          >
+            <div className="px-6 py-4 space-y-3">
+              {/* Dropdown inside Mobile */}
+              <details className="group">
+                <summary className="flex justify-between items-center cursor-pointer py-2 font-semibold hover:text-[#ff4e50]">
+                  Menu
+                </summary>
+                <div className="pl-4 mt-2 flex flex-col gap-2">
+                  {dropdownItems.map((item, i) => (
+                    <a
+                      key={i}
+                      href={item.href}
+                      className="block py-1 text-gray-700 hover:text-[#ff4e50] transition"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </details>
+
+              <a href="#about" className="block py-2 hover:text-[#ff4e50]">
+                About
+              </a>
+              <a href="#chef" className="block py-2 hover:text-[#ff4e50]">
+                Chef
+              </a>
+              <a href="#contact" className="block py-2 hover:text-[#ff4e50]">
+                Contact
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Gradient bar for decoration */}
+      <div
+        className={`hidden md:block h-1 w-full ${
+          scrolled
+            ? "bg-gradient-to-r from-sky-400 via-purple-300 to-sky-400"
+            : "bg-gradient-to-r from-[#ff4e50] via-[#f9d423] to-[#ff4e50] animate-gradient-move"
+        }`}
+      />
+    </motion.header>
   );
 }

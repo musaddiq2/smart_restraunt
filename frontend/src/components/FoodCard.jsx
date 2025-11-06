@@ -1,33 +1,41 @@
-import { useAppContext } from "../context/AppContext";
+/* eslint-disable no-unused-vars */
+import React from "react";
+import { motion } from "framer-motion";
+import { FaShoppingCart } from "react-icons/fa";
 
-export default function FoodCard({ food }) {
-  const { addToCart } = useAppContext();
-
+export default function FoodCard({ item, onAdd }) {
   return (
-    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className="w-full h-56 overflow-hidden">
+    <motion.article
+      layout
+      whileHover={{ translateY: -8 }}
+      className="rounded-2xl overflow-hidden border border-slate-700/40 bg-white/6 backdrop-blur-md shadow-md"
+    >
+      <div className="relative overflow-hidden">
         <img
-          src={food.image}
-          alt={food.name}
-          className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+          src={item.img}
+          alt={item.name}
+          className="w-full h-44 object-cover transform transition-transform duration-600 hover:scale-105"
         />
-      </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800">{food.name}</h3>
-        <p className="text-gray-500 text-sm">{food.category}</p>
-
-        <div className="flex justify-between items-center mt-3">
-          <span className="text-pink-600 font-semibold text-lg">
-            ₹{food.price}
-          </span>
-          <button
-            onClick={() => addToCart(food)}
-            className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
-          >
-            Add +
-          </button>
+        {/* subtle top-left badge */}
+        <div className="absolute left-3 top-3 px-2 py-1 rounded-md bg-white/10 text-xs text-white/90 backdrop-blur-sm">
+          {item.category}
         </div>
       </div>
-    </div>
+
+      <div className="p-4 text-center">
+        <h3 className="text-lg font-semibold text-sky-200">{item.name}</h3>
+        <p className="text-sm text-slate-300 mt-1">{item.description ?? ""}</p>
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <div className="text-xl font-bold text-purple-200">{item.price}</div>
+        </div>
+
+        <button
+          onClick={() => onAdd?.(item)}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-sky-400 via-purple-400 to-sky-400 text-white shadow hover:scale-105 transition"
+        >
+          <FaShoppingCart /> Add to Cart
+        </button>
+      </div>
+    </motion.article>
   );
 }

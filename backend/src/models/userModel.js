@@ -1,3 +1,4 @@
+// backend/src/models/userModel.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -40,7 +41,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// ✅ FIX: Safe model export
+// ✅ Safe export
 const User = mongoose.models.User || mongoose.model("User", userSchema);
-
 export default User;
