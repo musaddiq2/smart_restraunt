@@ -1,30 +1,21 @@
-// backend/src/server.js
+import express from "express";
 import dotenv from "dotenv";
-import app from "./app.js";
+import cors from "cors";
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 
-// ✅ Load env vars
 dotenv.config();
-
-// ✅ Connect MongoDB
 connectDB();
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use("/api/v1/auth", authRoutes);
+
+// Root
+app.get("/", (req, res) => res.send("✅ Smart Restaurant API Running"));
+
 const PORT = process.env.PORT || 5000;
-
-// ✅ Start server
-const server = app.listen(PORT, () => {
-  console.log(
-    `🚀 Smart Restaurant Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`
-  );
-});
-
-// ✅ Handle rejections & exceptions
-process.on("unhandledRejection", (err) => {
-  console.error(`❌ Unhandled Rejection: ${err.message}`);
-  server.close(() => process.exit(1));
-});
-
-process.on("uncaughtException", (err) => {
-  console.error(`💥 Uncaught Exception: ${err.message}`);
-  process.exit(1);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

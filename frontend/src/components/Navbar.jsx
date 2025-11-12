@@ -1,19 +1,47 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { FaUser, FaShoppingCart, FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
+import {
+  FaUser,
+  FaShoppingCart,
+  FaBars,
+  FaTimes,
+  FaChevronDown,
+  FaSignOutAlt,
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/VR_Logo.png";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
+  // ✅ Sticky Navbar on scroll
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // ✅ Load user data on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    if (token && storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  // ✅ Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setUserMenuOpen(false);
+    navigate("/login");
+  };
 
   const dropdownItems = [
     { label: "Veg", href: "#veg" },
@@ -30,20 +58,23 @@ export default function Navbar() {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className={`fixed w-full z-50 transition-all duration-700 ${
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ${
         scrolled
-          ? "bg-white/40 backdrop-blur-md text-slate-800 shadow-sm"
+          ? "bg-white/60 backdrop-blur-md text-slate-800 shadow-sm"
           : "text-white"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
+        {/* ✅ Logo */}
+        <div
+          className="flex items-center gap-3 cursor-pointer select-none"
+          onClick={() => navigate("/")}
+        >
           <img
             src={logo}
             alt="VR Logo"
             className={`w-10 h-10 rounded-full shadow-lg border-2 ${
-              scrolled ? "border-slate-200" : "border-white/60"
+              scrolled ? "border-slate-300" : "border-white/60"
             }`}
           />
           <div className="font-bold text-lg md:text-2xl leading-none">
@@ -58,9 +89,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop Nav */}
+        {/* ✅ Desktop Menu */}
         <nav className="hidden md:flex items-center gap-8 relative">
-          {/* Dropdown Menu */}
           <div
             className="relative"
             onMouseEnter={() => setDropdownOpen(true)}
@@ -108,8 +138,9 @@ export default function Navbar() {
           </a>
         </nav>
 
-        {/* Icons + Hamburger */}
+        {/* ✅ Right Side */}
         <div className="flex items-center gap-4">
+          {/* Cart */}
           <button
             className={`p-2 rounded-md hover:scale-105 transition ${
               scrolled ? "text-slate-700" : "text-white"
@@ -117,15 +148,56 @@ export default function Navbar() {
           >
             <FaShoppingCart />
           </button>
-          <button
-            className={`p-2 rounded-md hover:scale-105 transition ${
-              scrolled ? "text-slate-700" : "text-white"
-            }`}
-          >
-            <FaUser />
-          </button>
 
-          {/* Mobile Menu Button */}
+          {/* ✅ Show user info if logged in */}
+          {user ? (
+            <div className="relative select-none">
+              <div
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full cursor-pointer ${
+                  scrolled
+                    ? "bg-slate-100 text-slate-800"
+                    : "bg-white/20 text-white"
+                }`}
+              >
+                <FaUser className="text-sm" />
+                <span className="font-medium">{user.name}</span>
+                <FaChevronDown className="text-xs" />
+              </div>
+
+              {/* ✅ Logout Dropdown */}
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-36 bg-white shadow-lg rounded-md overflow-hidden text-sm border border-gray-100"
+                  >
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-100 text-gray-700 hover:text-red-500 transition"
+                    >
+                      <FaSignOutAlt /> Logout
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            // ✅ Show login only when user is not logged in
+            <button
+              onClick={() => navigate("/login")}
+              className={`p-2 rounded-md hover:scale-105 transition ${
+                scrolled ? "text-slate-700" : "text-white"
+              }`}
+            >
+              <FaUser />
+            </button>
+          )}
+
+          {/* ✅ Mobile Menu Toggle */}
           <button
             className={`md:hidden p-2 text-xl ${
               scrolled ? "text-slate-700" : "text-white"
@@ -138,7 +210,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* ✅ Mobile Drawer */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -149,7 +221,6 @@ export default function Navbar() {
             className="overflow-hidden md:hidden bg-white/95 text-slate-800"
           >
             <div className="px-6 py-4 space-y-3">
-              {/* Dropdown inside Mobile */}
               <details className="group">
                 <summary className="flex justify-between items-center cursor-pointer py-2 font-semibold hover:text-[#ff4e50]">
                   Menu
@@ -181,7 +252,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Gradient bar for decoration */}
+      {/* ✅ Gradient bar */}
       <div
         className={`hidden md:block h-1 w-full ${
           scrolled

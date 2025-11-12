@@ -1,18 +1,17 @@
-// src/pages/Register.jsx
 import React, { useState, useEffect } from "react";
 import { gsap } from "gsap";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../styles/auth.css";
 
-const Register = () => {
+export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
+    role: "user",
   });
 
   useEffect(() => {
@@ -21,14 +20,8 @@ const Register = () => {
       duration: 10,
       repeat: -1,
       yoyo: true,
-      ease: "power1.inOut",
     });
-
-    gsap.fromTo(
-      ".auth-card",
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1.2, ease: "power2.out" }
-    );
+    gsap.from(".auth-card", { opacity: 0, y: 30, duration: 1 });
   }, []);
 
   const handleChange = (e) =>
@@ -36,17 +29,18 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
+    if (formData.password !== formData.confirmPassword)
+      return alert("Passwords do not match!");
 
     try {
-      const { data } = await axios.post("/api/auth/register", formData);
-      alert(`🎉 Welcome ${data.user.name}! Registration successful.`);
+      const { data } = await axios.post(
+        "http://localhost:5000/api/v1/auth/register",
+        formData
+      );
+      alert(`🎉 Welcome ${data.user.name}!`);
       navigate("/login");
     } catch (error) {
-      alert(error.response?.data?.message || "Error registering user");
+      alert(error.response?.data?.message || "Registration failed");
     }
   };
 
@@ -58,41 +52,21 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="input-group">
-            <input
-              type="text"
-              name="name"
-              onChange={handleChange}
-              required
-            />
+            <input type="text" name="name" required onChange={handleChange} />
             <label>Full Name</label>
           </div>
 
           <div className="input-group">
-            <input
-              type="email"
-              name="email"
-              onChange={handleChange}
-              required
-            />
+            <input type="email" name="email" required onChange={handleChange} />
             <label>Email Address</label>
-          </div>
-
-          <div className="input-group">
-            <input
-              type="tel"
-              name="phone"
-              onChange={handleChange}
-              required
-            />
-            <label>Phone Number</label>
           </div>
 
           <div className="input-group">
             <input
               type="password"
               name="password"
-              onChange={handleChange}
               required
+              onChange={handleChange}
             />
             <label>Password</label>
           </div>
@@ -101,24 +75,22 @@ const Register = () => {
             <input
               type="password"
               name="confirmPassword"
-              onChange={handleChange}
               required
+              onChange={handleChange}
             />
             <label>Confirm Password</label>
           </div>
 
-          <button type="submit" className="auth-btn">
+          <button type="submit" className="auth-btn gradient-btn">
             Register
           </button>
         </form>
 
         <p className="auth-text">
           Already have an account?{" "}
-          <span onClick={() => navigate("/login")}>Login here →</span>
+          <span onClick={() => navigate("/login")}>Login →</span>
         </p>
       </div>
     </div>
   );
-};
-
-export default Register;
+}

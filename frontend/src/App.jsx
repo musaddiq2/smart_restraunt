@@ -6,6 +6,7 @@ import Menu from "./pages/Menu";
 import Auth from "./pages/Auth";
 import Login from "./pages/Login";  
 import Register from "./pages/Register";      
+import Menu_Sections from "./pages/menuSections.jsx";
 // import Cart from "./pages/Cart"; // optional
 import Home from "./pages/Home"; // keep or create a simple Home page
 
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* <Route path="/cart" element={<Cart />} /> */}
+        <Route path="/menu-sections" element={<Menu_Sections />} />
       </Routes>
     </>
   );

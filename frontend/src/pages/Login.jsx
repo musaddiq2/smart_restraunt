@@ -1,147 +1,110 @@
 import React, { useState, useEffect } from "react";
 import { gsap } from "gsap";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "../styles/auth.css";
 
-const LoginRegister = () => {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+export default function Login() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
+  // 🎞️ Animate background + card with GSAP
   useEffect(() => {
-    // Animate gradient background
     gsap.to(".auth-page", {
       backgroundPosition: "200% center",
       duration: 10,
       repeat: -1,
       yoyo: true,
-      ease: "power1.inOut",
     });
+    gsap.from(".auth-card", { opacity: 0, y: 30, duration: 1 });
   }, []);
 
+  // Handle input change
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  // 🧠 Handle login
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      if (isFlipped) {
-        if (formData.password !== formData.confirmPassword) {
-          alert("Passwords do not match!");
-          return;
-        }
-        const { data } = await axios.post("/api/auth/register", formData);
-        alert(`🎉 Welcome ${data.user.name}! Registration successful.`);
-        setIsFlipped(false);
-      } else {
-        const { data } = await axios.post("/api/auth/login", formData);
-        alert(`👋 Welcome back ${data.user.name}`);
-      }
+      const { data } = await axios.post(
+        "http://localhost:5000/api/v1/auth/login",
+        formData
+      );
+
+      // ✅ Save token and user info
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // 🎉 Welcome toast
+      toast.success(`👋 Welcome back, ${data.user.name}!`, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: false,
+        pauseOnHover: false,
+        draggable: false,
+        theme: "colored",
+      });
+
+      // 🕒 Redirect to Home after 2s
+      setTimeout(() => navigate("/"), 2000);
     } catch (error) {
-      alert(error.response?.data?.message || "Error occurred");
+      toast.error(error.response?.data?.message || "❌ Login failed", {
+        position: "top-center",
+        autoClose: 2500,
+        hideProgressBar: false,
+        theme: "colored",
+      });
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className={`flip-card ${isFlipped ? "flipped" : ""}`}>
-        {/* Login Side */}
-        <div className="flip-card-front auth-card">
-          <h2 className="auth-title">Welcome Back 🍽️</h2>
-          <p className="auth-subtitle">Login to your account</p>
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="input-group">
-              <input
-                type="email"
-                name="email"
-                placeholder=" "
-                required
-                onChange={handleChange}
-              />
-              <label>Email Address</label>
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                name="password"
-                placeholder=" "
-                required
-                onChange={handleChange}
-              />
-              <label>Password</label>
-            </div>
-            <button type="submit" className="auth-btn gradient-btn">
-              Login
-            </button>
-          </form>
-          <p className="auth-text">
-            New here?{" "}
-            <span onClick={() => setIsFlipped(true)}>Create Account</span>
-          </p>
-        </div>
+    <div className="auth-page flex justify-center items-center min-h-screen">
+      <div className="auth-card">
+        <h1 className="auth-title">🍽️ Smart Restaurant</h1>
+        <h2 className="auth-subtitle"><b>Welcome Back</b></h2>
 
-        {/* Register Side */}
-        <div className="flip-card-back auth-card">
-          <h2 className="auth-title">Create Account ✨</h2>
-          <p className="auth-subtitle">Join our restaurant family</p>
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="input-group">
-              <input
-                type="text"
-                name="name"
-                placeholder=" "
-                required
-                onChange={handleChange}
-              />
-              <label>Full Name</label>
-            </div>
-            <div className="input-group">
-              <input
-                type="email"
-                name="email"
-                placeholder=" "
-                required
-                onChange={handleChange}
-              />
-              <label>Email Address</label>
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                name="password"
-                placeholder=" "
-                required
-                onChange={handleChange}
-              />
-              <label>Password</label>
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder=" "
-                required
-                onChange={handleChange}
-              />
-              <label>Confirm Password</label>
-            </div>
-            <button type="submit" className="auth-btn gradient-btn">
-              Register
-            </button>
-          </form>
-          <p className="auth-text">
-            Already have an account?{" "}
-            <span onClick={() => setIsFlipped(false)}>Back to Login</span>
-          </p>
-        </div>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <input
+              type="email"
+              name="email"
+              required
+              onChange={handleChange}
+              autoComplete="off"
+            />
+            <label>Email Address</label>
+          </div>
+
+          <div className="input-group">
+            <input
+              type="password"
+              name="password"
+              required
+              onChange={handleChange}
+            />
+            <label>Password</label>
+          </div>
+
+          <button type="submit" className="auth-btn gradient-btn">
+            Login
+          </button>
+        </form>
+
+        <p className="auth-text">
+          New user?{" "}
+          <span onClick={() => navigate("/register")} className="link">
+            Create a new account →
+          </span>
+        </p>
       </div>
+
+      {/* Toastify Notification Container */}
+      <ToastContainer />
     </div>
   );
-};
-
-export default LoginRegister;
+}
+  

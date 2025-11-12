@@ -2,10 +2,7 @@
 
 /* Base body — dark theme canvas */
 body {
-  background: radial-gradient(1200px 600px at 10% 10%, rgba(99,102,241,0.05), transparent 10%),
-              radial-gradient(1000px 500px at 90% 80%, rgba(14,165,233,0.03), transparent 10%),
-              #030712;
-  color: #E6EEF6;
+
   font-family: Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
