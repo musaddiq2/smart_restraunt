@@ -1,4 +1,3 @@
-// src/app.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -11,6 +10,8 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import orderRoutes from "./routes/OrderRoutes.js";
 import menuRoutes from "./routes/menuRoutes.js";
 import userRoutes from "./routes/UserRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js"; // ✅ Added
+
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(morgan("dev"));
 
 // ✅ API Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/admin", adminRoutes); // ✅ Added
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1/menus", menuRoutes);

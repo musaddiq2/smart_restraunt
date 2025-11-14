@@ -20,7 +20,7 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// Role-based authorization
+// Role-based authorization middleware
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -29,3 +29,6 @@ export const authorizeRoles = (...roles) => {
     next();
   };
 };
+
+// ✅ Shortcut for admin routes
+export const isAdmin = authorizeRoles("admin");

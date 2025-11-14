@@ -49,8 +49,14 @@ export default function Login() {
         theme: "colored",
       });
 
-      // 🕒 Redirect to Home after 2s
-      setTimeout(() => navigate("/"), 2000);
+      // 🕒 Redirect after 2s based on role
+      setTimeout(() => {
+        if (data.user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/");
+        }
+      }, 2000);
     } catch (error) {
       toast.error(error.response?.data?.message || "❌ Login failed", {
         position: "top-center",
@@ -102,9 +108,7 @@ export default function Login() {
         </p>
       </div>
 
-      {/* Toastify Notification Container */}
       <ToastContainer />
     </div>
   );
 }
-  

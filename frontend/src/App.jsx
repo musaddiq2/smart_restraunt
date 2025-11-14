@@ -1,28 +1,53 @@
-// src/App.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Menu from "./pages/Menu";
+
+// Layouts
+import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
+
+// Pages
+import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import Login from "./pages/Login";  
-import Register from "./pages/Register";      
-import Menu_Sections from "./pages/menuSections.jsx";
-// import Cart from "./pages/Cart"; // optional
-import Home from "./pages/Home"; // keep or create a simple Home page
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Menu_Sections from "./pages/menuSections";
+
+// Admin
+import AdminLayout from "./pages/Admin/AdminLayout.jsx";
+import Dashboard from "./pages/Admin/Dashboard.jsx";
+import AddAdmin from "./pages/Admin/AddAdmin.jsx";
+
+// Route Protection
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 export default function App() {
   return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/menu" element={<Menu />} />
-         <Route path="/auth" element={<Auth />} />
-        <Route path="/register" element={<Register />} />
+    <Routes>
+      {/* 🔐 Auth Pages (NO NAVBAR) */}
+      <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
-        {/* <Route path="/cart" element={<Cart />} /> */}
+        <Route path="/register" element={<Register />} />
+      </Route>
+
+      {/* 🌐 Public Pages (WITH NAVBAR) */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="/menu-sections" element={<Menu_Sections />} />
-      </Routes>
-    </>
+      </Route>
+
+      {/* 👑 Admin Routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="add-admin" element={<AddAdmin />} />
+      </Route>
+    </Routes>
   );
 }
