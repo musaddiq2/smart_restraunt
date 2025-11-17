@@ -16,6 +16,8 @@ import Menu_Sections from "./pages/menuSections";
 import AdminLayout from "./pages/Admin/AdminLayout.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import AddAdmin from "./pages/Admin/AddAdmin.jsx";
+import Categories from "./pages/Admin/Categories.jsx";
+
 
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
@@ -47,6 +49,7 @@ export default function App() {
       >
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="add-admin" element={<AddAdmin />} />
+          <Route path="categories" element={<Categories />} />
       </Route>
     </Routes>
   );

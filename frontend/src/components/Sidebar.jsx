@@ -17,6 +17,7 @@ export default function Sidebar() {
     { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin/dashboard" },
     { name: "Orders", icon: <ShoppingBag size={20} />, path: "/admin/orders" },
     { name: "Menu", icon: <Utensils size={20} />, path: "/admin/menu" },
+    { name: "Categories", icon: <Utensils size={20} />, path: "/admin/categories" },
     { name: "Add Admin", icon: <UserPlus size={20} />, path: "/admin/add-admin" },
   ];
 
