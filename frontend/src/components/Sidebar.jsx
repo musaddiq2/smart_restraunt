@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { MdCategory } from 'react-icons/md'
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -40,15 +41,13 @@ export default function Sidebar() {
 
   // Sidebar menu items
   const menuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin/dashboard" },
-    { name: "Orders", icon: <ShoppingBag size={18} />, path: "/admin/orders" },
-    { name: "Menu", icon: <Utensils size={18} />, path: "/admin/menu" },
-    { name: "Categories", icon: <Utensils size={18} />, path: "/admin/categories" },
-    
-    // ⭐ New Restaurant Management Section
-    { name: "Add Restaurant", icon: <Building2 size={18} />, path: "/admin/add-restaurant" },
-    
-    { name: "Add Admin", icon: <UserPlus size={18} />, path: "/admin/add-admin" },
+    { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin/dashboard" },
+    { name: "Orders", icon: <ShoppingBag size={20} />, path: "/admin/orders" },
+    { name: "Menu", icon: <Utensils size={20} />, path: "/admin/menu" },
+    // { name: "Categories", icon: <Utensils size={20} />, path: "/admin/categories" },
+    { name: "Categories", icon: <MdCategory size={20} />, path: "/admin/categories" },
+
+    { name: "Add Admin", icon: <UserPlus size={20} />, path: "/admin/add-admin" },
   ];
 
   // Logout handler
