@@ -90,7 +90,7 @@ const handleSave = () => {
       <h1>Categories</h1>
 
       {/* Add Button */}
-      <button
+        <button
         style={{
           background: "green",
           color: "white",
@@ -102,7 +102,7 @@ const handleSave = () => {
         onClick={() => setShowModal(true)}
       >
         + Add Category
-      </button>
+        </button>
 
       {/* Loading / Error */}
       {loading && <p>Loading...</p>}
@@ -139,7 +139,7 @@ const handleSave = () => {
 
 
 
-<tbody>
+          <tbody>
   {categories.map((cat) => (
     <tr key={cat._id}>
       <td>{cat.mainCategory}</td>
@@ -147,24 +147,24 @@ const handleSave = () => {
       <td>{cat.type}</td>
       <td>{cat.isActive ? "Active" : "Inactive"}</td>
       <td>
-        <button
+                  <button
           style={{ marginRight: "5px" }}
           onClick={() => handleEditClick(cat)}
-        >
-          Edit
-        </button>
+                  >
+                    Edit
+                  </button>
         {/* Delete button later */}
-      </td>
-    </tr>
-  ))}
-</tbody>
+                </td>
+              </tr>
+            ))}
+          </tbody>
 
 
 
 
 
 
-      </table>
+        </table>
 
       {/* POPUP Modal */}
       {showModal && (
@@ -271,7 +271,7 @@ const handleSave = () => {
               Cancel
             </button>
           </div>
-        </div>
+      </div>
       )}
     </div>
   );

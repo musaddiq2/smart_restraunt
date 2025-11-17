@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const axiosClient = axios.create({
-  baseURL: "http://localhost:5000/api", // 🔗 connect to backend later
-  withCredentials: true,
-});
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
 
-axiosClient.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
-);
+const axiosClient = axios.create({
+  baseURL,
+  withCredentials: true,
+  headers: {
+    "Accept": "application/json",
+  },
+});
 
 export default axiosClient;

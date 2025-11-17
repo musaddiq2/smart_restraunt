@@ -1,14 +1,19 @@
 import express from "express";
-import { createRestaurant, updateRestaurant } from "../controllers/restaurantController.js";
-import { validateRequest } from "../middlewares/validateRequest.js";
-import { restaurantSchema } from "../validations/restaurantValidation.js";
-
+import upload from "../middlewares/upload.js";
+import {
+  addRestaurant,
+  getRestaurants,
+  getRestaurant,
+  updateRestaurant,
+  deleteRestaurant,
+} from "../controllers/restaurantController.js";
 
 const router = express.Router();
 
-
-router.post("/", validateRequest(restaurantSchema), createRestaurant);
-router.put("/:id", validateRequest(restaurantSchema), updateRestaurant);
-
+router.post("/add", upload.single("restaurantImg"), addRestaurant);
+router.get("/all", getRestaurants);
+router.get("/:id", getRestaurant);
+router.put("/update/:id", upload.single("restaurantImg"), updateRestaurant);
+router.delete("/delete/:id", deleteRestaurant);
 
 export default router;

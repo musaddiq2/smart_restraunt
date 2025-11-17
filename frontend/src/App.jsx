@@ -12,12 +12,12 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Menu_Sections from "./pages/menuSections";
 
-// Admin
+// Admin Pages
 import AdminLayout from "./pages/Admin/AdminLayout.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import AddAdmin from "./pages/Admin/AddAdmin.jsx";
 import Categories from "./pages/Admin/Categories.jsx";
-
+import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";   // ⭐ NEW
 
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
@@ -31,14 +31,14 @@ export default function App() {
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* 🌐 Public Pages (WITH NAVBAR) */}
+      {/* 🌐 Public Pages */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/menu-sections" element={<Menu_Sections />} />
       </Route>
 
-      {/* 👑 Admin Routes */}
+      {/* 👑 Admin Section */}
       <Route
         path="/admin"
         element={
@@ -49,7 +49,10 @@ export default function App() {
       >
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="add-admin" element={<AddAdmin />} />
-          <Route path="categories" element={<Categories />} />
+        <Route path="categories" element={<Categories />} />
+
+        {/* ⭐ NEW ROUTE */}
+        <Route path="add-restaurant" element={<AddRestaurant />} />
       </Route>
     </Routes>
   );
