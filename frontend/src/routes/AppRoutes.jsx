@@ -15,7 +15,6 @@ export default function AppRoutes() {
         <Route path="/" element={<Menu />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/categories" element={<Categories />} />
 

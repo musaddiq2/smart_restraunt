@@ -39,12 +39,12 @@ const MenuItemSchema = new mongoose.Schema(
       min: [0, "Rating cannot be below 0"],
       max: [5, "Rating cannot be above 5"],
     },
-    veg: {
-      type: Boolean,
-      default: true,
-    },
+    // veg: {
+    //   type: Boolean,
+    //   default: true,
+    // },
   },
-  { timestamps: true }
+  // { timestamps: true }
 );
 
 const MenuItem = mongoose.model("MenuItem", MenuItemSchema);

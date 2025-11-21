@@ -1,41 +1,48 @@
+// ✅ Added dotenv, cors, and custom DB connection
 import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import connectDB from "./config/db.js";
+import dotenv from "dotenv";          // NEW: load environment variables
+import cors from "cors";              // NEW: enable CORS
+import connectDB from "./config/db.js"; // NEW: custom DB connection function
 
-import authRoutes from "./routes/authRoutes.js";
-import categoryRoutes from "./routes/categoryRoutes.js";
-import restaurantRoutes from "./routes/restaurantRoutes.js";
+// ✅ Added new route imports
+import authRoutes from "./routes/authRoutes.js";          // NEW
+import categoryRoutes from "./routes/categoryRoutes.js";  // NEW
+import restaurantRoutes from "./routes/restaurantRoutes.js"; // NEw
+import menuRoutes from "./routes/menuRoutes.js"; // ✅ correct path
 
-dotenv.config();
-connectDB();
+dotenv.config();   // NEW: initialize dotenv
+connectDB();       // NEW: connect to MongoDB via custom function
 
 const app = express();
 
 // ⭐ Correct CORS for credentials + formData
+// ✅ Replaced default express setup with proper CORS config
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    origin: "http://localhost:5173",   // NEW: allow frontend origin
+    methods: ["GET", "POST", "PUT", "DELETE"], // NEW: allowed methods
+    credentials: true,                 // NEW: allow cookies/credentials
   })
 );
 
-// Body parser
+// ✅ Body parser remains same
 app.use(express.json());
 
 // ⭐ Make uploads folder public
 app.use("/uploads", express.static("uploads"));
 
-// Routes
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/categories", categoryRoutes);
-app.use("/api/v1/restaurants", restaurantRoutes);
+// ✅ Updated routes (added auth, categories, restaurants)
+app.use("/api/v1/auth", authRoutes);             // NEW
+app.use("/api/v1/categories", categoryRoutes);   // NEW
+app.use("/api/v1/restaurants", restaurantRoutes);// NEW
+app.use("/api/v1/menus", menuRoutes);
 
-// Default route
+// ✅ Added default route
 app.get("/", (req, res) => {
   res.send("🚀 Smart Restaurant API Running...");
 });
 
+// ✅ PORT now comes from .env with fallback
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
