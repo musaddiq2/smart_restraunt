@@ -6,7 +6,7 @@ export default function RestaurantCard({ item, onEdit, onDelete }) {
       <div className="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
         {item.restaurantImg ? (
           <img
-            src={`http://localhost:5000/uploads/restaurants/${item.restaurantImg}`}
+            src={`${import.meta.env.VITE_API_URL}/${item.restaurantImg}`}
             alt={item.name}
             className="w-full h-full object-cover"
           />

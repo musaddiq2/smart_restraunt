@@ -17,8 +17,8 @@ import AdminLayout from "./pages/Admin/AdminLayout.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import AddAdmin from "./pages/Admin/AddAdmin.jsx";
 import Categories from "./pages/Admin/Categories.jsx";
-import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";   // ⭐ NEW
-
+import Restaurant from "./pages/Admin/RestaurantManagement.jsx";
+import TableList from "./pages/Admin/Tables/TableList.jsx";
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
@@ -50,9 +50,11 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="add-admin" element={<AddAdmin />} />
         <Route path="categories" element={<Categories />} />
+        
 
         {/* ⭐ NEW ROUTE */}
-        <Route path="add-restaurant" element={<AddRestaurant />} />
+        <Route path="restaurant" element={<Restaurant />} />
+        <Route path="tables" element={<TableList />} />
       </Route>
     </Routes>
   );

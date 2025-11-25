@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategories, addCategory, updateCategory, toggleCategory, deleteCategory } from "../../redux/slices/categorySlice";
+import {
+  fetchCategories,
+  addCategory,
+  updateCategory,
+  toggleCategory,
+  deleteCategory,
+} from "../../redux/slices/categorySlice";
+
 import { Plus, Edit2, Trash2 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Categories() {
   const dispatch = useDispatch();
@@ -17,7 +25,6 @@ export default function Categories() {
   const [isActive, setIsActive] = useState(true);
   const [editingCategory, setEditingCategory] = useState(null);
 
-  // Search + Pagination
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 5;
@@ -28,46 +35,49 @@ export default function Categories() {
 
   const openAddModal = () => {
     setEditingCategory(null);
+    resetForm();
+    setShowModal(true);
+  };
+
+  const resetForm = () => {
     setMainCategory("");
     setSubCategory("");
     setType("");
     setIsActive(true);
-    setShowModal(true);
-  };
-
-  const handleAddCategory = () => {
-    dispatch(addCategory({ mainCategory, subCategory, type, isActive }))
-      .unwrap()
-      .then(() => {
-        setShowModal(false);
-        toast.success("Category added successfully!");
-        resetForm();
-      })
-      .catch((err) => toast.error("Failed to add category"));
-  };
-
-  const handleEditClick = (cat) => {
-    setEditingCategory(cat);
-    setMainCategory(cat.mainCategory || "");
-    setSubCategory(cat.subCategory || "");
-    setType(cat.type || "");
-    setIsActive(Boolean(cat.isActive));
-    setShowModal(true);
   };
 
   const handleSave = () => {
     if (editingCategory) {
-      dispatch(updateCategory({ id: editingCategory._id, data: { mainCategory, subCategory, type, isActive } }))
+      dispatch(
+        updateCategory({
+          id: editingCategory._id,
+          data: { mainCategory, subCategory, type, isActive },
+        })
+      )
         .unwrap()
         .then(() => {
-          setShowModal(false);
           toast.success("Category updated successfully!");
-          resetForm();
+          setShowModal(false);
         })
         .catch(() => toast.error("Failed to update category"));
     } else {
-      handleAddCategory();
+      dispatch(addCategory({ mainCategory, subCategory, type, isActive }))
+        .unwrap()
+        .then(() => {
+          toast.success("Category added successfully!");
+          setShowModal(false);
+        })
+        .catch(() => toast.error("Failed to add category"));
     }
+  };
+
+  const handleEditClick = (cat) => {
+    setEditingCategory(cat);
+    setMainCategory(cat.mainCategory);
+    setSubCategory(cat.subCategory);
+    setType(cat.type);
+    setIsActive(cat.isActive);
+    setShowModal(true);
   };
 
   const handleToggle = (cat) => {
@@ -79,99 +89,117 @@ export default function Categories() {
   };
 
   const handleDelete = (cat) => {
-    if (!window.confirm(`Delete category "${cat.mainCategory} / ${cat.subCategory}"?`)) return;
+    if (!window.confirm(`Delete category "${cat.mainCategory}/${cat.subCategory}"?`)) return;
+
     dispatch(deleteCategory(cat._id))
       .unwrap()
       .then(() => toast.success("Category deleted successfully!"))
       .catch(() => toast.error("Delete failed"));
   };
 
-  const resetForm = () => {
-    setEditingCategory(null);
-    setMainCategory("");
-    setSubCategory("");
-    setType("");
-    setIsActive(true);
-  };
-
-  // Filter + Pagination
+  // Search + Pagination
   const filtered = categories.filter(
     (cat) =>
       cat.mainCategory.toLowerCase().includes(search.toLowerCase()) ||
       cat.subCategory.toLowerCase().includes(search.toLowerCase()) ||
       cat.type.toLowerCase().includes(search.toLowerCase())
   );
+
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="p-6">
       <ToastContainer position="top-right" autoClose={2500} />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1>Categories</h1>
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-slate-800">Category Management</h1>
+
         <button
           onClick={openAddModal}
-          style={{ background: "#10B981", color: "white", padding: "8px 14px", borderRadius: 6, border: "none", display: "flex", alignItems: "center", gap: 6 }}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow transition"
         >
-          <Plus size={16} /> Add Category
+          <Plus size={18} /> Add Category
         </button>
       </div>
 
-      <div style={{ margin: "12px 0" }}>
+      {/* SEARCH */}
+      <div className="mb-6">
         <input
           placeholder="Search categories..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{ padding: 8, width: "100%", borderRadius: 6, border: "1px solid #ddd" }}
+          className="w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none"
         />
       </div>
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>Error: {JSON.stringify(error)}</p>}
-
-      <div style={{ marginTop: 12, overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: "#f7fafc" }}>
-              <th style={{ padding: 10, textAlign: "left" }}>Main Category</th>
-              <th style={{ padding: 10, textAlign: "left" }}>Sub Category</th>
-              <th style={{ padding: 10, textAlign: "left" }}>Type</th>
-              <th style={{ padding: 10, textAlign: "left" }}>Active</th>
-              <th style={{ padding: 10, textAlign: "left" }}>Actions</th>
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-slate-50 text-slate-600 text-sm uppercase">
+            <tr>
+              <th className="px-6 py-3 text-left">Main Category</th>
+              <th className="px-6 py-3 text-left">Sub Category</th>
+              <th className="px-6 py-3 text-left">Type</th>
+              <th className="px-6 py-3 text-left">Status</th>
+              <th className="px-6 py-3 text-left">Actions</th>
             </tr>
           </thead>
-          <tbody>
+
+          <tbody className="text-slate-700">
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: 16, textAlign: "center" }}>No categories found</td>
+                <td colSpan={5} className="py-10 text-center text-slate-500">
+                  No categories found.
+                </td>
               </tr>
             )}
+
             {paginated.map((cat, idx) => (
               <tr
                 key={cat._id}
-                style={{
-                  background: idx % 2 === 0 ? "#fafafa" : "#fff",
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#f0fdf4")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = idx % 2 === 0 ? "#fafafa" : "#fff")}
+                className="hover:bg-green-50 border-b last:border-none transition"
               >
-                <td style={{ padding: 10 }}>{cat.mainCategory}</td>
-                <td style={{ padding: 10 }}>{cat.subCategory}</td>
-                <td style={{ padding: 10 }}>{cat.type}</td>
-                <td style={{ padding: 10 }}>
-                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <input type="checkbox" checked={Boolean(cat.isActive)} onChange={() => handleToggle(cat)} />
-                    <span style={{ fontSize: 13 }}>{cat.isActive ? "Active" : "Inactive"}</span>
-                  </label>
+                <td className="px-6 py-4">{cat.mainCategory}</td>
+                <td className="px-6 py-4">{cat.subCategory}</td>
+                <td className="px-6 py-4">{cat.type}</td>
+
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      cat.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {cat.isActive ? "Active" : "Inactive"}
+                  </span>
                 </td>
-                <td style={{ padding: 10, display: "flex", gap: 6 }}>
-                  <button onClick={() => handleEditClick(cat)} style={{ border: "none", background: "transparent", cursor: "pointer" }}>
-                    <Edit2 size={16} />
+
+                <td className="px-6 py-4 flex gap-4">
+                  <button
+                    onClick={() => handleEditClick(cat)}
+                    className="p-2 rounded-full hover:bg-blue-50 text-blue-600 transition"
+                  >
+                    <Edit2 size={18} />
                   </button>
-                  <button onClick={() => handleDelete(cat)} style={{ border: "none", background: "transparent", cursor: "pointer" }}>
-                    <Trash2 size={16} color="#b91c1c" />
+
+                  <button
+                    onClick={() => handleDelete(cat)}
+                    className="p-2 rounded-full hover:bg-red-50 text-red-600 transition"
+                  >
+                    <Trash2 size={18} />
                   </button>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cat.isActive}
+                      onChange={() => handleToggle(cat)}
+                    />
+                    <span className="text-xs">{cat.isActive ? "On" : "Off"}</span>
+                  </label>
                 </td>
               </tr>
             ))}
@@ -179,21 +207,18 @@ export default function Categories() {
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* PAGINATION */}
       {totalPages > 1 && (
-        <div style={{ marginTop: 12, display: "flex", justifyContent: "center", gap: 6 }}>
+        <div className="flex justify-center gap-2 mt-6">
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i}
               onClick={() => setPage(i + 1)}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 4,
-                border: page === i + 1 ? "1px solid #10B981" : "1px solid #ddd",
-                background: page === i + 1 ? "#10B981" : "#fff",
-                color: page === i + 1 ? "#fff" : "#000",
-                cursor: "pointer",
-              }}
+              className={`px-4 py-2 rounded-lg border transition ${
+                page === i + 1
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+              }`}
             >
               {i + 1}
             </button>
@@ -201,74 +226,65 @@ export default function Categories() {
         </div>
       )}
 
-      {/* Animated Modal */}
+      {/* MODAL */}
       {showModal && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 50,
-          }}
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
         >
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0.8 }}
-            style={{ width: 420, background: "#fff", padding: 18, borderRadius: 8 }}
+            className="bg-white p-6 rounded-2xl w-[400px] shadow-xl"
           >
-            <h2 style={{ marginTop: 0 }}>{editingCategory ? "Edit Category" : "Add Category"}</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {editingCategory ? "Edit Category" : "Add Category"}
+            </h2>
 
-            <div style={{ marginBottom: 8 }}>
-              <label style={{ display: "block", marginBottom: 6, fontSize: 13 }}>Main Category</label>
+            <div className="space-y-4">
               <input
+                placeholder="Main Category"
                 value={mainCategory}
                 onChange={(e) => setMainCategory(e.target.value)}
-                style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
+                className="w-full px-4 py-2 rounded-lg border"
               />
-            </div>
 
-            <div style={{ marginBottom: 8 }}>
-              <label style={{ display: "block", marginBottom: 6, fontSize: 13 }}>Sub Category</label>
               <input
+                placeholder="Sub Category"
                 value={subCategory}
                 onChange={(e) => setSubCategory(e.target.value)}
-                style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
+                className="w-full px-4 py-2 rounded-lg border"
               />
-            </div>
 
-            <div style={{ marginBottom: 8 }}>
-              <label style={{ display: "block", marginBottom: 6, fontSize: 13 }}>Type</label>
               <input
+                placeholder="Type"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                style={{ width: "100%", padding: 8, borderRadius: 6, border: "1px solid #ddd" }}
+                className="w-full px-4 py-2 rounded-lg border"
               />
-            </div>
 
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                <input type="checkbox" checked={isActive} onChange={() => setIsActive((s) => !s)} />
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={() => setIsActive(!isActive)}
+                />
                 <span>{isActive ? "Active" : "Inactive"}</span>
               </label>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}
-                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ddd", background: "#fff" }}
+                className="px-4 py-2 rounded-lg border"
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleSave}
-                style={{ padding: "8px 12px", borderRadius: 6, background: "#0ea5a0", color: "#fff", border: "none" }}
+                className="px-4 py-2 rounded-lg bg-green-600 text-white shadow"
               >
                 Save
               </button>
