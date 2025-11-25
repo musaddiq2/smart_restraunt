@@ -119,18 +119,11 @@ export default function Sidebar() {
             to={item.path}
             end
             className={({ isActive }) =>
-<<<<<<< HEAD
               `flex items-center justify-between p-3 rounded-xl transition-all duration-200 text-base font-medium
               ${
                 isActive
                   ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
                   : "text-slate-700 hover:bg-gray-100 hover:text-rose-600"
-=======
-              `flex items-center justify-between p-3 rounded-xl transition-all duration-200 text-base font-medium group 
-              ${isActive
-                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
-                : "text-slate-700 hover:bg-gray-100 hover:text-rose-600"
->>>>>>> 41e523eabd298ae0e6b19ab87bbd04ad6a8c2c63
               }`
             }
           >
@@ -139,22 +132,14 @@ export default function Sidebar() {
               <span>{item.name}</span>
             </div>
 
-<<<<<<< HEAD
             {/* Right arrow when active */}
             <ChevronRight size={18} className="opacity-70" />
-=======
-            {/* Active indicator FIXED */}
-            {({ isActive }) =>
-              isActive ? <ChevronRight size={18} className="text-white" /> : null
-            }
->>>>>>> 41e523eabd298ae0e6b19ab87bbd04ad6a8c2c63
           </NavLink>
         ))}
       </nav>
 
       {/* Settings + Logout */}
       <div className="border-t border-gray-100 p-4 space-y-2">
-<<<<<<< HEAD
         <NavLink
           to="/admin/settings"
           className={({ isActive }) =>
@@ -168,29 +153,6 @@ export default function Sidebar() {
         >
           <Settings size={18} />
           <span>Settings</span>
-=======
-
-        {/* Settings */}
-        <NavLink
-          to="/admin/settings"
-          className={({ isActive }) =>
-            `flex items-center justify-between p-3 rounded-xl transition-all duration-200 text-base font-medium group 
-            ${isActive
-              ? "bg-gray-200 text-slate-800"
-              : "text-slate-500 hover:bg-gray-100 hover:text-slate-700"
-            }`
-          }
-        >
-          <div className="flex items-center gap-3">
-            <Settings size={18} />
-            <span>Settings</span>
-          </div>
-
-          {/* Settings active icon FIX */}
-          {({ isActive }) =>
-            isActive ? <ChevronRight size={18} className="text-slate-800" /> : null
-          }
->>>>>>> 41e523eabd298ae0e6b19ab87bbd04ad6a8c2c63
         </NavLink>
 
         <button

@@ -57,12 +57,8 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="add-admin" element={<AddAdmin />} />
         <Route path="categories" element={<Categories />} />
-<<<<<<< HEAD
-        
-=======
         <Route path="menu" element={<MenuPage />} />
 
->>>>>>> 41e523eabd298ae0e6b19ab87bbd04ad6a8c2c63
 
         {/* ⭐ NEW ROUTE */}
         <Route path="restaurant" element={<Restaurant />} />
