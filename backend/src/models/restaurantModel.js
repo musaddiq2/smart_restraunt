@@ -2,19 +2,14 @@ import mongoose from "mongoose";
 
 const restaurantSchema = new mongoose.Schema(
   {
-    restaurantId: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
     name: {
       type: String,
       required: true,
     },
 
-    contact: {
+    restaurantId: {
       type: String,
+      unique: true,
       required: true,
     },
 
@@ -41,7 +36,7 @@ const restaurantSchema = new mongoose.Schema(
 
     restaurantImg: {
       type: String,
-      default: null,
+      required: false,
     },
   },
   { timestamps: true }

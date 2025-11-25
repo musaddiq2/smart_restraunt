@@ -17,8 +17,15 @@ import AdminLayout from "./pages/Admin/AdminLayout.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import AddAdmin from "./pages/Admin/AddAdmin.jsx";
 import Categories from "./pages/Admin/Categories.jsx";
+<<<<<<< HEAD
 import Restaurant from "./pages/Admin/RestaurantManagement.jsx";
 import TableList from "./pages/Admin/Tables/TableList.jsx";
+=======
+import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";   // ⭐ NEW
+import MenuPage from "./pages/Admin/MenuPage.jsx";
+
+
+>>>>>>> 41e523eabd298ae0e6b19ab87bbd04ad6a8c2c63
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
@@ -50,7 +57,12 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="add-admin" element={<AddAdmin />} />
         <Route path="categories" element={<Categories />} />
+<<<<<<< HEAD
         
+=======
+        <Route path="menu" element={<MenuPage />} />
+
+>>>>>>> 41e523eabd298ae0e6b19ab87bbd04ad6a8c2c63
 
         {/* ⭐ NEW ROUTE */}
         <Route path="restaurant" element={<Restaurant />} />

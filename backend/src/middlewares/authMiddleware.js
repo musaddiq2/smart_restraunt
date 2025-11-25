@@ -32,3 +32,13 @@ export const authorizeRoles = (...roles) => {
 
 // ✅ Shortcut for admin routes
 export const isAdmin = authorizeRoles("admin");
+
+export const adminAuth = (req, res, next) => {
+  // Example: check user role
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ success: false, message: "Admin access required" });
+  }
+};
+
