@@ -1,5 +1,5 @@
-import Restaurant from "../models/restaurantModel.js";
-
+// import Restaurant from "../models/restaurantModel.js";
+import Restaurant from "../models/Restaurant.js";
 // ➕ ADD RESTAURANT
 export const addRestaurant = async (req, res) => {
   try {
@@ -89,3 +89,17 @@ export const deleteRestaurant = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+// import Restaurant from "../models/Restaurant.js";
+
+// export const getAllRestaurants = async (req, res) => {
+//   try {
+//     const restaurants = await Restaurant.find();
+//     res.status(200).json(restaurants);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };

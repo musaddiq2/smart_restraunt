@@ -1,7 +1,11 @@
+// src/redux/slices/restaurantsSlice.js
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// 🔥 Fetch restaurants from backend
+// ========================
+// 🔥 Fetch Restaurants API
+// ========================
 export const fetchRestaurants = createAsyncThunk(
   "restaurants/fetch",
   async (_, { rejectWithValue }) => {
@@ -14,31 +18,55 @@ export const fetchRestaurants = createAsyncThunk(
   }
 );
 
-// 🔥 Initial State ALWAYS MUST HAVE list/loading/error
+// ========================
+// 🔥 Initial State
+// ========================
 const initialState = {
-  list: [],
+  items: [],                     // list of restaurants
   loading: false,
-  error: null
+  error: null,
+  selectedRestaurantId: "",      // super admin selected restaurant
 };
 
-const restaurantSlice = createSlice({
-  name: "restaurant",
+// ========================
+// 🔥 Slice
+// ========================
+const restaurantsSlice = createSlice({
+  name: "restaurants",
   initialState,
-  reducers: {},
+  reducers: {
+    // manually set selected restaurant
+    setSelectedRestaurant(state, action) {
+      state.selectedRestaurantId = action.payload;
+    },
+  },
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchRestaurants.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
+
       .addCase(fetchRestaurants.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload;
+        state.items = action.payload;
+
+        // Auto-select first restaurant if none selected
+        if (!state.selectedRestaurantId && action.payload?.length > 0) {
+          state.selectedRestaurantId = action.payload[0]._id;
+        }
       })
+
       .addCase(fetchRestaurants.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
-export default restaurantSlice.reducer;
+// ========================
+// 🔥 Exports
+// ========================
+export const { setSelectedRestaurant } = restaurantsSlice.actions;
+export default restaurantsSlice.reducer;

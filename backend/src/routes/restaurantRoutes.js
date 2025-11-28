@@ -16,4 +16,11 @@ router.get("/:id", getRestaurant);
 router.put("/update/:id", upload.single("restaurantImg"), updateRestaurant);
 router.delete("/delete/:id", deleteRestaurant);
 
+
+
 export default router;
+
+
+
+
+
