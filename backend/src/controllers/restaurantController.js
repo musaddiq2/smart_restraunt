@@ -1,6 +1,72 @@
-// import Restaurant from "../models/restaurantModel.js";
-import Restaurant from "../models/Restaurant.js";
-// ➕ ADD RESTAURANT
+import Restaurant from "../models/restaurantModel.js";
+import cloudinary from "../config/cloudinary.js";
+
+/* ===========================================================
+   ⭐ GET ALL RESTAURANTS
+   =========================================================== */
+export const getAllRestaurants = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find().sort({ createdAt: -1 });
+    res.status(200).json(restaurants);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/* ===========================================================
+   ⭐ NEW — GET RESTAURANT BY restaurantId (For Table Auto Fill)
+   =========================================================== */
+export const getRestaurantByRestaurantId = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    const restaurant = await Restaurant.findOne({ restaurantId });
+
+    if (!restaurant) {
+      return res.status(404).json({
+        message: "Restaurant not found",
+      });
+    }
+
+    res.status(200).json(restaurant);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/* ===========================================================
+   ⭐ NEW — GET RESTAURANT BY _id
+   =========================================================== */
+export const getRestaurantById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const restaurant = await Restaurant.findById(id);
+
+    if (!restaurant) {
+      return res.status(404).json({
+        message: "Restaurant not found",
+      });
+    }
+
+    res.status(200).json(restaurant);
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/* ===========================================================
+   ⭐ ADD RESTAURANT
+   =========================================================== */
 export const addRestaurant = async (req, res) => {
   try {
     const {
@@ -15,7 +81,9 @@ export const addRestaurant = async (req, res) => {
 
     const existing = await Restaurant.findOne({ restaurantId });
     if (existing) {
-      return res.status(400).json({ message: "Restaurant ID already exists!" });
+      return res.status(400).json({
+        message: "Restaurant ID already exists!",
+      });
     }
 
     const newRestaurant = new Restaurant({
@@ -26,7 +94,7 @@ export const addRestaurant = async (req, res) => {
       address,
       openingTime,
       closingTime,
-      restaurantImg: req.file ? req.file.filename : null,
+      restaurantImg: req.file ? req.file.path : null,
     });
 
     await newRestaurant.save();
@@ -36,57 +104,99 @@ export const addRestaurant = async (req, res) => {
       restaurant: newRestaurant,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 
-// 📌 GET ALL RESTAURANTS
-export const getRestaurants = async (req, res) => {
+/* ===========================================================
+   ⭐ EDIT RESTAURANT
+   =========================================================== */
+export const editRestaurant = async (req, res) => {
   try {
-    const restaurants = await Restaurant.find().sort({ createdAt: -1 });
-    res.json(restaurants);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    const { id } = req.params;
+    const restaurant = await Restaurant.findById(id);
+
+    if (!restaurant) {
+      return res.status(404).json({
+        message: "Restaurant not found",
+      });
+    }
+
+    // Delete old image if new uploaded
+    if (req.file && restaurant.restaurantImg) {
+      const publicId = restaurant.restaurantImg
+        .split("/")
+        .pop()
+        .split(".")[0];
+      await cloudinary.uploader.destroy(`restaurants/${publicId}`);
+    }
+
+    // Update fields
+    restaurant.restaurantId = req.body.restaurantId || restaurant.restaurantId;
+    restaurant.name = req.body.name || restaurant.name;
+    restaurant.contact = req.body.contact || restaurant.contact;
+    restaurant.type = req.body.type || restaurant.type;
+    restaurant.address = req.body.address || restaurant.address;
+    restaurant.openingTime =
+      req.body.openingTime || restaurant.openingTime;
+    restaurant.closingTime =
+      req.body.closingTime || restaurant.closingTime;
+
+    // Update image
+    restaurant.restaurantImg = req.file
+      ? req.file.path
+      : restaurant.restaurantImg;
+
+    await restaurant.save();
+
+    res.status(200).json({
+      message: "Restaurant updated successfully",
+      restaurant,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
 };
 
-// 📌 GET SINGLE
-export const getRestaurant = async (req, res) => {
-  try {
-    const r = await Restaurant.findById(req.params.id);
-    if (!r) return res.status(404).json({ message: "Restaurant not found" });
-
-    res.json(r);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// 🛠 UPDATE
-export const updateRestaurant = async (req, res) => {
-  try {
-    const updated = await Restaurant.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...req.body,
-        restaurantImg: req.file ? req.file.filename : req.body.restaurantImg,
-      },
-      { new: true }
-    );
-
-    res.json({ message: "Updated", restaurant: updated });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// ❌ DELETE
+/* ===========================================================
+   ⭐ DELETE RESTAURANT
+   =========================================================== */
 export const deleteRestaurant = async (req, res) => {
   try {
-    await Restaurant.findByIdAndDelete(req.params.id);
-    res.json({ message: "Restaurant removed" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    const { id } = req.params;
+    const restaurant = await Restaurant.findById(id);
+
+    if (!restaurant) {
+      return res.status(404).json({
+        message: "Restaurant not found",
+      });
+    }
+
+    // Delete image
+    if (restaurant.restaurantImg) {
+      const publicId = restaurant.restaurantImg
+        .split("/")
+        .pop()
+        .split(".")[0];
+      await cloudinary.uploader.destroy(`restaurants/${publicId}`);
+    }
+
+    await Restaurant.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Restaurant deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
 };
 

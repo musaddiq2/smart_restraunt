@@ -17,6 +17,8 @@ import AdminLayout from "./pages/Admin/AdminLayout.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import AddAdmin from "./pages/Admin/AddAdmin.jsx";
 import Categories from "./pages/Admin/Categories.jsx";
+import Restaurant from "./pages/Admin/RestaurantManagement.jsx";
+import TableList from "./pages/Admin/Tables/TableList.jsx";
 import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";   // ⭐ NEW
 import MenuPage from "./pages/Admin/MenuPage.jsx";
 
@@ -56,7 +58,8 @@ export default function App() {
 
 
         {/* ⭐ NEW ROUTE */}
-        <Route path="add-restaurant" element={<AddRestaurant />} />
+        <Route path="restaurant" element={<Restaurant />} />
+        <Route path="tables" element={<TableList />} />
       </Route>
     </Routes>
   );

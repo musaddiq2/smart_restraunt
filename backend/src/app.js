@@ -11,7 +11,7 @@ import orderRoutes from "./routes/OrderRoutes.js";
 import menuRoutes from "./routes/menuRoutes.js";
 import userRoutes from "./routes/UserRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js"; // ✅ Added
-
+import tableRoutes from './routes/tableRoutes.js';
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config();
@@ -24,14 +24,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
+
 // ✅ API Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes); // ✅ Added
 app.use("/api/v1/categories", categoryRoutes);
-app.use("/api/v1/restaurants", restaurantRoutes);
+app.use("/api/v1/restaurant", restaurantRoutes);
 app.use("/api/v1/menus", menuRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use('/api/v1/tables', tableRoutes);
 
 // ✅ Test Route
 app.get("/", (req, res) => res.send("🍽️ Smart Restaurant API is running..."));
