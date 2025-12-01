@@ -3,15 +3,38 @@ import MenuItem from "../models/MenuItem.js";
 
 const router = express.Router();
 
-// GET all menu items
+// // GET all menu items
+// router.get("/", async (req, res) => {
+//   try {
+//     const menu = await MenuItem.find();
+//     res.json(menu);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+
+
+
 router.get("/", async (req, res) => {
   try {
-    const menu = await MenuItem.find();
+    const { restaurantId } = req.query;
+
+    let filter = {};
+    if (restaurantId) filter.restaurantId = restaurantId;
+
+    const menu = await MenuItem.find(filter);
+
     res.json(menu);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+
+
+
+
 
 // GET single menu item by ID
 router.get("/:menuId", async (req, res) => {

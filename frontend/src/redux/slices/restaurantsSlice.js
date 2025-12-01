@@ -15,6 +15,7 @@ export const fetchRestaurants = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await axios.get(`${API}/restaurant`);
+
       if (res.status !== 200) {
         throw new Error("Failed to fetch restaurants");
       }

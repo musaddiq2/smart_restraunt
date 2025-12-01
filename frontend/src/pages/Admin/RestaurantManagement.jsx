@@ -9,7 +9,7 @@ import { Store, Edit, Trash2, Plus, Search, X } from "lucide-react";
 import {
   fetchRestaurants,
   deleteRestaurant,
-} from "../../redux/slices/restaurantSlice.js";
+} from "../../redux/slices/restaurantsSlice.js";
 
 // Import Add Restaurant Modal UI (converted from your AddRestaurant.jsx)
 import AddRestaurantModal from "../../components/AddRestaurantModal.jsx";

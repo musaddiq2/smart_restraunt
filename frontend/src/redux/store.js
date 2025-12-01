@@ -1,15 +1,23 @@
+// src/redux/store.js
 import { configureStore } from "@reduxjs/toolkit";
-import cartReducer from "./cartSlice"; // adjust path if needed
-import categoryReducer from "./slices/categorySlice";
-import restaurantReducer from "./slices/restaurantSlice";
-import tableReducer from "./slices/tableSlice"; // <--- added
 
+// Import all slices
+import cartReducer from "./cartSlice"; 
+import categoryReducer from "./slices/categorySlice";
+import restaurantsReducer from "./slices/restaurantsSlice";
+import tableReducer from "./slices/tableSlice";
+import menuReducer from "./slices/menuSlice"; // added menuSlice
+// import { fetchRestaurants } from "../../redux/slices/restaurantsSlice";
+
+
+// Configure store with all reducers
 export const store = configureStore({
   reducer: {
     cart: cartReducer,
     categories: categoryReducer,
-    restaurant: restaurantReducer,
+    restaurants: restaurantsReducer,
     tables: tableReducer,
+    menu: menuReducer, // include menu slice here
   },
 });
 
