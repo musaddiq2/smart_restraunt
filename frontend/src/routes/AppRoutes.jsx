@@ -12,13 +12,19 @@ import Register from "../pages/Register";
 // ADMIN PAGES
 import Dashboard from "../pages/Admin/Dashboard";
 import Categories from "../pages/Admin/Categories";
-import RestaurantList from "../pages/Admin/RestaurantList";
+
+// RESTAURANT MODULE
+import RestaurantManagement from "../pages/Admin/RestaurantManagement";
+import AddRestaurant from "../pages/Admin/AddRestaurant";
+import EditRestaurant from "../pages/Admin/EditRestaurant";
+
+// ADMIN MANAGEMENT
 import AddAdmin from "../pages/Admin/AddAdmin";
 
 // TABLE MODULE
 import AddTable from "../pages/Admin/Tables/AddTable";
 import TableList from "../pages/Admin/Tables/TableList";
-import EditTable from "../pages/Admin/Tables/EditTable";    // 🆕 ADDED
+import EditTable from "../pages/Admin/Tables/EditTable";
 import TableQR from "../pages/Admin/Tables/TableQR";
 
 // LAYOUTS
@@ -31,7 +37,6 @@ export default function AppRoutes() {
       <Navbar />
 
       <Routes>
-
         {/* ====================== */}
         {/* USER ROUTES */}
         {/* ====================== */}
@@ -39,11 +44,9 @@ export default function AppRoutes() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/categories" element={<Categories />} />
 
         {/* ====================== */}
-        {/* ADMIN ROUTES */}
+        {/* ADMIN NESTED ROUTES */}
         {/* ====================== */}
         <Route
           path="/admin"
@@ -53,17 +56,22 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          {/* Redirect /admin → /admin/dashboard */}
+          {/* Default → /admin/dashboard */}
           <Route index element={<Navigate to="dashboard" replace />} />
 
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="categories" element={<Categories />} />
 
+          {/* ====================== */}
           {/* RESTAURANT MODULE */}
-          <Route path="restaurant" element={<RestaurantList />} />
-          <Route path="restaurant/add" element={<AddRestaurant />} />
-          <Route path="restaurant/edit/:id" element={<RestaurantList />} />
-          {/* ADMIN MANAGEMENT */}
+          {/* ====================== */}
+          <Route path="restaurants" element={<RestaurantManagement />} />
+          <Route path="restaurants/add" element={<AddRestaurant />} />
+          <Route path="edit-restaurant/:id" element={<EditRestaurant />} />
+
+          {/* ====================== */}
+          {/* ADMIN / STAFF ADD */}
+          {/* ====================== */}
           <Route path="add-admin" element={<AddAdmin />} />
 
           {/* ====================== */}
@@ -71,7 +79,7 @@ export default function AppRoutes() {
           {/* ====================== */}
           <Route path="tables" element={<TableList />} />
           <Route path="tables/add" element={<AddTable />} />
-          <Route path="tables/edit/:id" element={<EditTable />} /> {/* 🆕 */}
+          <Route path="tables/edit/:id" element={<EditTable />} />
           <Route path="tables/qr/:id" element={<TableQR />} />
         </Route>
 

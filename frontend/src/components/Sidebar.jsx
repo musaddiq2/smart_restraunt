@@ -11,7 +11,9 @@ import {
   ChevronRight,
   User,
   QrCode,
+  Building2, // <-- add this
 } from "lucide-react";
+
 
 export default function Sidebar() {
   const navigate = useNavigate();
