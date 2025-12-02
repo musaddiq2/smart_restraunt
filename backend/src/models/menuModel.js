@@ -1,4 +1,24 @@
-// models/menuModel.js
+// // models/menuModel.js
+// import mongoose from "mongoose";
+
+// const menuItemSchema = new mongoose.Schema({
+//   name: String,
+//   price: Number,
+//   description: String,
+//   available: { type: Boolean, default: true },
+// });
+
+// const menuSchema = new mongoose.Schema({
+//   name: { type: String, default: "Main Menu" },
+//   items: [menuItemSchema],
+//   updatedAt: { type: Date, default: Date.now },
+// });
+
+// export default mongoose.model("Menu", menuSchema);
+
+
+
+// models/MenuItem.js
 import mongoose from "mongoose";
 
 const menuItemSchema = new mongoose.Schema({
@@ -6,12 +26,13 @@ const menuItemSchema = new mongoose.Schema({
   price: Number,
   description: String,
   available: { type: Boolean, default: true },
+
+  // ⭐ ADD THIS (Important)
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+  },
 });
 
-const menuSchema = new mongoose.Schema({
-  name: { type: String, default: "Main Menu" },
-  items: [menuItemSchema],
-  updatedAt: { type: Date, default: Date.now },
-});
-
-export default mongoose.model("Menu", menuSchema);
+export default mongoose.model("MenuItem", menuItemSchema);

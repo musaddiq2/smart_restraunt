@@ -199,3 +199,17 @@ export const deleteRestaurant = async (req, res) => {
     });
   }
 };
+
+
+
+
+// import Restaurant from "../models/Restaurant.js";
+
+// export const getAllRestaurants = async (req, res) => {
+//   try {
+//     const restaurants = await Restaurant.find();
+//     res.status(200).json(restaurants);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };

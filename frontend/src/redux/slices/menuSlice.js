@@ -1,25 +1,28 @@
 // src/redux/slices/menuSlice.js
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api/v1/menus";
 
-// =================== Async Thunks ===================
-
-// Fetch all menus
+// ==========================================
+// 1) FETCH MENUS BY RESTAURANT
+// ==========================================
 export const fetchMenus = createAsyncThunk(
   "menu/fetchMenus",
-  async (_, { rejectWithValue }) => {
+  async (restaurantId, { rejectWithValue }) => {
     try {
-      const res = await axios.get(BASE_URL);
-      return res.data?.data ?? res.data; // Support both {data} and raw array
+      const res = await axios.get(`${BASE_URL}?restaurantId=${restaurantId}`);
+      return res.data?.data ?? res.data; // handle both formats
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// Add new menu
+// ==========================================
+// 2) ADD MENU
+// ==========================================
 export const addMenu = createAsyncThunk(
   "menu/addMenu",
   async (menuData, { rejectWithValue }) => {
@@ -32,7 +35,9 @@ export const addMenu = createAsyncThunk(
   }
 );
 
-// Update menu
+// ==========================================
+// 3) UPDATE MENU
+// ==========================================
 export const updateMenu = createAsyncThunk(
   "menu/updateMenu",
   async ({ id, data }, { rejectWithValue }) => {
@@ -45,7 +50,9 @@ export const updateMenu = createAsyncThunk(
   }
 );
 
-// Delete menu
+// ==========================================
+// 4) DELETE MENU
+// ==========================================
 export const deleteMenu = createAsyncThunk(
   "menu/deleteMenu",
   async (id, { rejectWithValue }) => {
@@ -58,7 +65,9 @@ export const deleteMenu = createAsyncThunk(
   }
 );
 
-// Toggle menu availability
+// ==========================================
+// 5) TOGGLE MENU AVAILABILITY
+// ==========================================
 export const toggleMenu = createAsyncThunk(
   "menu/toggleMenu",
   async ({ id, isAvailable }, { rejectWithValue }) => {
@@ -71,20 +80,24 @@ export const toggleMenu = createAsyncThunk(
   }
 );
 
-// =================== Slice ===================
+// ==========================================
+// SLICE
+// ==========================================
+const initialState = {
+  menus: [],
+  loading: false,
+  error: null,
+};
 
 const menuSlice = createSlice({
   name: "menu",
-  initialState: {
-    menus: [],
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {
     clearMenuError: (state) => {
       state.error = null;
     },
   },
+
   extraReducers: (builder) => {
     builder
       // Fetch menus
@@ -108,7 +121,9 @@ const menuSlice = createSlice({
 
       // Update menu
       .addCase(updateMenu.fulfilled, (state, action) => {
-        const index = state.menus.findIndex((m) => m._id === action.payload._id);
+        const index = state.menus.findIndex(
+          (m) => m._id === action.payload._id
+        );
         if (index >= 0) state.menus[index] = action.payload;
       })
 
@@ -119,7 +134,9 @@ const menuSlice = createSlice({
 
       // Toggle menu
       .addCase(toggleMenu.fulfilled, (state, action) => {
-        const index = state.menus.findIndex((m) => m._id === action.payload._id);
+        const index = state.menus.findIndex(
+          (m) => m._id === action.payload._id
+        );
         if (index >= 0) state.menus[index] = action.payload;
       });
   },

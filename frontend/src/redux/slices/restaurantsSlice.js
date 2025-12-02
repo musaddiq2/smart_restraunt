@@ -1,3 +1,5 @@
+// src/redux/slices/restaurantsSlice.js
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios"; // <-- Use shared axios instance
 
@@ -13,6 +15,7 @@ export const fetchRestaurants = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await axios.get(`${API}/restaurant`);
+
       if (res.status !== 200) {
         throw new Error("Failed to fetch restaurants");
       }
@@ -47,15 +50,24 @@ export const deleteRestaurant = createAsyncThunk(
 //  SLICE
 // =========================
 const initialState = {
-  list: [],
+  items: [],                     // list of restaurants
   loading: false,
   error: null,
 };
 
-const restaurantSlice = createSlice({
-  name: "restaurant",
+// ========================
+// 🔥 Slice
+// ========================
+const restaurantsSlice = createSlice({
+  name: "restaurants",
   initialState,
-  reducers: {},
+  reducers: {
+    // manually set selected restaurant
+    setSelectedRestaurant(state, action) {
+      state.selectedRestaurantId = action.payload;
+    },
+  },
+
   extraReducers: (builder) => {
     builder
 
@@ -64,6 +76,7 @@ const restaurantSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+
       .addCase(fetchRestaurants.fulfilled, (state, action) => {
         state.loading = false;
 
@@ -72,6 +85,7 @@ const restaurantSlice = createSlice({
           ? action.payload.data
           : action.payload;
       })
+
       .addCase(fetchRestaurants.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -84,4 +98,8 @@ const restaurantSlice = createSlice({
   },
 });
 
-export default restaurantSlice.reducer;
+// ========================
+// 🔥 Exports
+// ========================
+export const { setSelectedRestaurant } = restaurantsSlice.actions;
+export default restaurantsSlice.reducer;

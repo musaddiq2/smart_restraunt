@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronRight,
   User,
+  Building2, // <-- add this
   QrCode,
   Building2, // <-- add this
 } from "lucide-react";
@@ -39,6 +40,7 @@ export default function Sidebar() {
     { name: "Menu", icon: <Utensils size={20} />, path: "/admin/menu" },
     { name: "Categories", icon: <MdCategory size={20} />, path: "/admin/categories" },
     { name: "Restaurant Management", icon: <Building2 size={20} />, path: "/admin/restaurant" },
+    
     { name: "Add Admin", icon: <UserPlus size={20} />, path: "/admin/add-admin" },
 
     // ⭐ NEW — TABLES & QR

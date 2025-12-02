@@ -32,4 +32,11 @@ router.put("/:id", upload.single("restaurantImg"), editRestaurant);
 // DELETE RESTAURANT
 router.delete("/:id", deleteRestaurant);
 
+
+
 export default router;
+
+
+
+
+
