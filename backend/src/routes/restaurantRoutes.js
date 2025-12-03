@@ -4,39 +4,34 @@ import {
   addRestaurant,
   editRestaurant,
   deleteRestaurant,
-  getRestaurantByRestaurantId,   // ⭐ NEW
-  getRestaurantById               // ⭐ NEW
+  getRestaurantByRestaurantId,
+  getRestaurantById
 } from "../controllers/restaurantController.js";
 
 import upload from "../config/multer.js";
 
 const router = express.Router();
 
-// ---------------- RESTAURANT ROUTES ----------------
+/* -----------------------------------------
+   RESTAURANT ROUTES (ORDER IS IMPORTANT)
+------------------------------------------*/
 
-// GET ALL restaurants
+// 1️⃣ Get ALL restaurants
 router.get("/", getAllRestaurants);
 
-// ⭐ NEW — Get restaurant using restaurantId (used by TableList auto-fill)
+// 2️⃣ Get by restaurantId (string-based)
 router.get("/find/:restaurantId", getRestaurantByRestaurantId);
 
-// ⭐ Optional — Get restaurant by MongoDB _id
+// 3️⃣ Get by MongoDB _id (always keep this LAST)
 router.get("/:id", getRestaurantById);
 
-// ADD RESTAURANT
+// 4️⃣ Add restaurant (uses image 'restaurantImg')
 router.post("/add", upload.single("restaurantImg"), addRestaurant);
 
-// EDIT RESTAURANT
+// 5️⃣ Edit restaurant (image optional)
 router.put("/:id", upload.single("restaurantImg"), editRestaurant);
 
-// DELETE RESTAURANT
+// 6️⃣ Delete restaurant
 router.delete("/:id", deleteRestaurant);
 
-
-
 export default router;
-
-
-
-
-

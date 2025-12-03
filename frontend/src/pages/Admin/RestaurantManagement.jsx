@@ -1,258 +1,180 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-// Icons
-import { Store, Edit, Trash2, Plus, Search, X } from "lucide-react";
-
-// Redux actions
-import {
-  fetchRestaurants,
-  deleteRestaurant,
-} from "../../redux/slices/restaurantsSlice.js";
-
-// Import Add Restaurant Modal UI (converted from your AddRestaurant.jsx)
-import AddRestaurantModal from "../../components/AddRestaurantModal.jsx";
+import { fetchRestaurants, deleteRestaurant } from "../../redux/slices/restaurantsSlice";
+import AddRestaurantModal from "./AddRestaurant";
+import { gsap } from "gsap";
+import { Link } from "react-router-dom";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 
 export default function RestaurantManagement() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const { list = [], loading } = useSelector((state) => state.restaurants || {});
 
-  const { list = [], loading, error } =
-    useSelector((state) => state.restaurant || {});
-  const restaurants = Array.isArray(list) ? list : [];
+  const [openAdd, setOpenAdd] = useState(false);
+  const [editingRestaurant, setEditingRestaurant] = useState(null);
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
 
-  // Debug: Log restaurants data
-  useEffect(() => {
-    console.log("Restaurants in component:", restaurants);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
-  }, [restaurants, loading, error]);
+  const rowsRef = useRef([]);
+  rowsRef.current = [];
 
-  const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState("");
-  const [openModal, setOpenModal] = useState(false); // 🔥 NEW: Modal State
-
-  // 🔥 Fetch on Load
   useEffect(() => {
     dispatch(fetchRestaurants());
   }, [dispatch]);
 
-  // 🔍 Filter - Initialize and update filtered when restaurants or search changes
   useEffect(() => {
-    if (!restaurants || restaurants.length === 0) {
-      setFiltered([]);
-      return;
-    }
-
-    if (!search || search.trim() === "") {
-      setFiltered(restaurants);
-      return;
-    }
-
-    const term = search.toLowerCase();
-    const results = restaurants.filter((r) => {
-      return (
-        (r.name || "").toLowerCase().includes(term) ||
-        (r.type || "").toLowerCase().includes(term) ||
-        (r.restaurantId || "").toString().includes(search) ||
-        (r.contact || "").toString().includes(search) ||
-        (r.email || "").toLowerCase().includes(term)
-      );
-    });
-
-    setFiltered(results);
-  }, [search, restaurants]);
-
-  // 🗑 Delete Restaurant (Redux)
-  const handleDelete = (id) => {
-    if (!window.confirm("Are you sure?")) return;
-    dispatch(deleteRestaurant(id));
-  };
-
-  const handleEdit = (id) => {
-    navigate(`/admin/edit-restaurant/${id}`);
-  };
-
-  if (loading)
-    return <p className="text-center py-10">Loading Restaurants...</p>;
-
-  if (error)
-    return <p className="text-center py-10 text-red-600">Error: {error.message || error}</p>;
-
-  if (!restaurants || restaurants.length === 0)
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Store className="text-rose-600" size={30} />
-            Restaurant List
-          </h1>
-          <button
-            onClick={() => setOpenModal(true)}
-            className="px-5 py-2.5 bg-rose-600 text-white font-semibold rounded-xl shadow hover:bg-rose-700 transition-all flex items-center gap-2"
-          >
-            <Plus size={20} /> Add Restaurant
-          </button>
-        </div>
-        <div className="bg-white p-12 rounded-2xl shadow-xl border text-center">
-          <p className="text-gray-500 text-lg">No restaurants found. Add your first restaurant!</p>
-        </div>
-        {openModal && (
-          <AddRestaurantModal
-            onClose={() => setOpenModal(false)}
-            onSuccess={() => {
-              setOpenModal(false);
-              dispatch(fetchRestaurants());
-            }}
-          />
-        )}
-      </div>
+    if (!rowsRef.current.length) return;
+    gsap.fromTo(
+      rowsRef.current,
+      { y: 10, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.45, stagger: 0.05, ease: "power3.out" }
     );
+  }, [list]);
+
+  const addRowRef = (el) => {
+    if (el && !rowsRef.current.includes(el)) rowsRef.current.push(el);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Delete this restaurant?")) return;
+    await dispatch(deleteRestaurant(id));
+    dispatch(fetchRestaurants());
+  };
+
+  const handleEdit = (restaurant) => {
+    setEditingRestaurant(restaurant);
+    setOpenAdd(true);
+  };
+
+  const filtered = useMemo(() => {
+    let data = Array.isArray(list) ? [...list] : [];
+
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      data = data.filter(
+        (r) =>
+          (r.name || "").toLowerCase().includes(q) ||
+          (r.restaurantId || "").toLowerCase().includes(q) ||
+          (r.contact || "").toLowerCase().includes(q)
+      );
+    }
+
+    if (typeFilter !== "All") {
+      data = data.filter((r) => (r.type || "").toLowerCase() === typeFilter.toLowerCase());
+    }
+
+    if (statusFilter !== "All") {
+      data = data.filter((r) => (r.status || "").toLowerCase() === statusFilter.toLowerCase());
+    }
+
+    if (sortBy === "az") data.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    if (sortBy === "za") data.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+    if (sortBy === "newest")
+      data.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    return data;
+  }, [list, query, typeFilter, statusFilter, sortBy]);
 
   return (
-    <div className="p-6">
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <Store className="text-rose-600" size={30} />
-          Restaurant List
-        </h1>
-
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Restaurant Management</h1>
         <button
-          onClick={() => setOpenModal(true)} // 🔥 OPEN MODAL
-          className="px-5 py-2.5 bg-rose-600 text-white font-semibold rounded-xl shadow 
-                    hover:bg-rose-700 transition-all flex items-center gap-2"
+          onClick={() => {
+            setEditingRestaurant(null);
+            setOpenAdd(true);
+          }}
+          className="bg-rose-600 hover:bg-rose-700 transition text-white px-5 py-2.5 rounded-lg shadow"
         >
-          <Plus size={20} /> Add Restaurant
+          + Add Restaurant
         </button>
       </div>
 
-      {/* SEARCH */}
-      <div className="mb-6 relative max-w-md">
-        <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+      <div className="bg-white p-4 rounded-lg shadow flex flex-wrap gap-3">
         <input
-          type="text"
-          placeholder="Search restaurants..."
-          className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 
-                                focus:ring-2 focus:ring-rose-500 focus:border-rose-500 
-                                shadow-sm outline-none"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search name, ID, contact..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="px-3 py-2 border rounded-lg flex-1"
         />
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="px-3 py-2 border rounded-lg">
+          <option value="All">All Types</option>
+          <option value="Veg">Veg</option>
+          <option value="Non-Veg">Non-Veg</option>
+          <option value="Both">Both</option>
+        </select>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border rounded-lg">
+          <option value="All">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 border rounded-lg">
+          <option value="newest">Newest</option>
+          <option value="az">Name A → Z</option>
+          <option value="za">Name Z → A</option>
+        </select>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white p-6 rounded-2xl shadow-xl border">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Store size={22} className="text-rose-600" />
-          Restaurant Partner List
-        </h2>
-
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="min-w-full bg-white">
-            <thead className="bg-gray-100">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <table className="min-w-full">
+          <thead className="bg-slate-100 text-slate-700">
+            <tr>
+              <th className="p-3 text-left">Restaurant</th>
+              <th className="p-3 text-left">Type</th>
+              <th className="p-3 text-left">Contact</th>
+              <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
               <tr>
-                <Th>#ID</Th>
-                <Th>Image</Th>
-                <Th>Name</Th>
-                <Th>Type</Th>
-                <Th>Mobile</Th>
-                <Th>Email</Th>
-                <Th>Status</Th>
-                <Th className="text-center">Actions</Th>
+                <td colSpan={5} className="p-6">Loading...</td>
               </tr>
-            </thead>
-
-            <tbody className="divide-y">
-              {filtered.map((data) => (
-                <tr key={data._id} className="hover:bg-rose-50/40 transition">
-                  <Td>{data.restaurantId}</Td>
-
-                  <Td>
-                    <img
-                      src={data.restaurantImg}
-                      className="h-14 w-14 rounded-md object-cover border"
-                      alt=""
-                    />
-                  </Td>
-
-                  <Td className="font-semibold">{data.name}</Td>
-                  <Td>{data.type}</Td>
-                  <Td>{data.contact || "--"}</Td>
-                  <Td>{data.email || "--"}</Td>
-
-                  <Td>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${data.status === "Active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                        }`}
-                    >
-                      {data.status || "Active"}
-                    </span>
-                  </Td>
-
-                  <Td className="text-center">
-                    <div className="flex justify-center gap-3">
-                      <button
-                        onClick={() => handleEdit(data._id)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-full transition"
-                      >
-                        <Edit size={18} />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(data._id)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-full transition"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-6 text-center">No restaurants found</td>
+              </tr>
+            ) : (
+              filtered.map((r) => (
+                <tr key={r._id} ref={addRowRef} className="border-t hover:bg-slate-50 transition">
+                  <td className="p-3 flex items-center gap-3">
+                    <img src={r.restaurantImg || "/noimg.png"} className="w-12 h-12 rounded-lg object-cover border" />
+                    <div>
+                      <div className="font-semibold text-slate-800">{r.name}</div>
+                      <div className="text-sm text-slate-500 font-mono">#{r.restaurantId}</div>
                     </div>
-                  </Td>
+                  </td>
+                  <td className="p-3">{r.type}</td>
+                  <td className="p-3">{r.contact || "--"}</td>
+                  <td className="p-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${r.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="p-3 flex gap-2">
+                    <Link to={`view/${r._id}`} className="p-2 rounded-lg border hover:bg-slate-100"><Eye size={18} /></Link>
+                    <button onClick={() => handleEdit(r)} className="p-2 rounded-lg border hover:bg-slate-100"><Pencil size={18} /></button>
+                    <button onClick={() => handleDelete(r._id)} className="p-2 rounded-lg border hover:bg-red-50 text-red-600"><Trash2 size={18} /></button>
+                  </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <p className="text-sm text-gray-500 mt-4">
-          Showing {filtered.length} restaurants
-        </p>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* 🔥 ADD RESTAURANT MODAL COMPONENT */}
-      {openModal && (
-        <AddRestaurantModal
-          onClose={() => {
-            setOpenModal(false);
-          }}
-          onSuccess={async () => {
-            setOpenModal(false);
-            // Refresh restaurants list after successful addition
-            await dispatch(fetchRestaurants());
-            console.log("Restaurants list refreshed");
-          }}
-        />
-      )}
+      <AddRestaurantModal
+        open={openAdd}
+        restaurant={editingRestaurant}
+        onClose={() => setOpenAdd(false)}
+        onSuccess={() => {
+          setOpenAdd(false);
+          dispatch(fetchRestaurants());
+        }}
+      />
     </div>
-  );
-}
-
-/* ------------------- COMPONENTS ------------------- */
-
-function Th({ children, className = "" }) {
-  return (
-    <th
-      className={`px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase ${className}`}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({ children, className = "" }) {
-  return (
-    <td className={`px-6 py-4 text-sm text-gray-700 ${className}`}>{children}</td>
   );
 }
