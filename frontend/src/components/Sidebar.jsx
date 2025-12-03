@@ -12,7 +12,6 @@ import {
   User,
   Building2, // <-- add this
   QrCode,
-  Building2, // <-- add this
 } from "lucide-react";
 
 
