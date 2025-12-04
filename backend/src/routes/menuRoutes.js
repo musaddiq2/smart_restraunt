@@ -3,19 +3,6 @@ import MenuItem from "../models/MenuItem.js";
 
 const router = express.Router();
 
-// // GET all menu items
-// router.get("/", async (req, res) => {
-//   try {
-//     const menu = await MenuItem.find();
-//     res.json(menu);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
-
-
-
 router.get("/", async (req, res) => {
   try {
     const { restaurantId } = req.query;

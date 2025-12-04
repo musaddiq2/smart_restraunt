@@ -14,6 +14,7 @@ import {
   QrCode,
 } from "lucide-react";
 
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("Admin User");

@@ -1,187 +1,333 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Upload, Save } from "lucide-react";
+import {
+  Store,
+  Clock,
+  MapPin,
+  Phone,
+  CloudUpload,
+  X,
+  Loader2,
+} from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function EditRestaurant() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
+  const API_BASE =
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000/api/v1";
+  const BASE_URL = `${API_BASE.replace(/\/$/, "")}/restaurant`;
+
+  const [formData, setFormData] = useState({
+    restaurantId: "",
     name: "",
+    contact: "",
     type: "",
     address: "",
-    contact: "",
+    openingTime: "",
+    closingTime: "",
+    email: "",
+    status: "Active",
   });
 
-  const [previewImage, setPreviewImage] = useState("");
-  const [restaurantImg, setRestaurantImg] = useState(null);
+  const [previewImg, setPreviewImg] = useState(null);
+  const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch restaurant by ID
-  const loadRestaurant = async () => {
+  const fileInputRef = useRef(null);
+
+  // Fetch existing restaurant
+  const fetchRestaurant = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/v1/restaurants/${id}`
-      );
+      const res = await axios.get(`${BASE_URL}/${id}`);
+      const data = res.data?.restaurant || res.data?.data || res.data;
 
-      const data = res.data.restaurant;
-
-      setForm({
-        name: data.name,
+      setFormData({
+        restaurantId: data.restaurantId || "",
+        name: data.name || "",
+        contact: data.contact || "",
         type: data.type || "",
         address: data.address || "",
-        contact: data.contact || "",
+        openingTime: data.openingTime || "",
+        closingTime: data.closingTime || "",
+        email: data.email || "",
+        status: data.status || "Active",
       });
 
-      setPreviewImage(data.restaurantImg || "");
-    } catch (error) {
-      console.error("Error loading restaurant:", error);
-      alert("Restaurant not found!");
-    } finally {
+      setPreviewImg(data.restaurantImg || data.image || "");
       setLoading(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load restaurant");
+      navigate("/admin/restaurants");
     }
   };
 
   useEffect(() => {
-    loadRestaurant();
-  }, []);
+    fetchRestaurant();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-  // Handle text fields
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  // Handle image selection
+  // image handling
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setRestaurantImg(file);
-    setPreviewImage(URL.createObjectURL(file));
+    if (file && file.type.startsWith("image/")) {
+      setImage(file);
+      setPreviewImg(URL.createObjectURL(file));
+    } else {
+      toast.error("Please select a valid image");
+    }
   };
 
-  // Submit update form
+  const chooseFile = () => fileInputRef.current?.click();
+
+  const removeImage = () => {
+    setImage(null);
+    setPreviewImg(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("type", form.type);
-    formData.append("address", form.address);
-    formData.append("contact", form.contact);
+    setLoading(true);
 
-    if (restaurantImg) {
-      formData.append("restaurantImg", restaurantImg);
-    }
+    const data = new FormData();
+    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+    if (image) data.append("restaurantImg", image);
 
     try {
-      await axios.put(
-        `http://localhost:5000/api/v1/restaurants/${id}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      await axios.put(`${BASE_URL}/${id}`, data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+      });
 
-      alert("Restaurant updated successfully!");
-      navigate("/admin/restaurant");
-    } catch (error) {
-      console.error(error);
-      alert("Error updating restaurant");
+      toast.success("Restaurant updated successfully");
+
+      setTimeout(() => {
+        navigate("/admin/restaurant-management");
+      }, 600);
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Failed to update restaurant"
+      );
     }
+
+    setLoading(false);
   };
 
   if (loading)
     return (
-      <p className="text-center py-10 text-lg font-medium">
-        Loading restaurant...
-      </p>
+      <div className="flex justify-center py-20 text-lg text-rose-600">
+        Loading restaurant details…
+      </div>
     );
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-2xl p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-          <Save className="text-orange-600" /> Edit Restaurant
-        </h2>
+    <div className="min-h-screen bg-orange-50/50 py-10 px-4 flex justify-center">
+      <ToastContainer position="top-center" />
 
-        <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-5">
+      <div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8 border border-orange-200">
+        <header className="text-center mb-8">
+          <Store className="text-5xl text-orange-600 mx-auto mb-3" />
+          <h1 className="text-3xl font-extrabold text-slate-800">
+            Edit Restaurant
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Update restaurant details & information.
+          </p>
+        </header>
+
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          {/* READING ONLY ID */}
+          <div>
+            <label className="block text-sm mb-1">Restaurant ID</label>
+            <input
+              type="text"
+              value={formData.restaurantId}
+              readOnly
+              className="w-full bg-slate-100 border border-slate-300 px-4 py-3 rounded-xl text-sm cursor-not-allowed"
+            />
+          </div>
 
           {/* Name */}
           <div>
-            <label className="text-gray-700 font-medium">Restaurant Name</label>
+            <label className="block text-sm mb-1">Name</label>
             <input
               type="text"
               name="name"
-              value={form.name}
-              onChange={handleChange}
+              value={formData.name}
               required
-              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
+              onChange={handleChange}
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+
+          {/* Contact */}
+          <div>
+            <label className="block text-sm mb-1">Contact</label>
+            <input
+              type="text"
+              name="contact"
+              value={formData.contact}
+              required
+              onChange={handleChange}
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              required
+              onChange={handleChange}
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
           {/* Type */}
           <div>
-            <label className="text-gray-700 font-medium">Type</label>
-            <input
-              type="text"
+            <label className="block text-sm mb-1">Restaurant Type</label>
+            <select
               name="type"
-              value={form.type}
+              value={formData.type}
+              required
               onChange={handleChange}
-              placeholder="Veg / Non-Veg"
-              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
+            >
+              <option value="">Select</option>
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
+              <option value="Veg & Non-Veg">Veg & Non-Veg</option>
+            </select>
+          </div>
+
+          {/* Opening Time */}
+          <div>
+            <label className="block text-sm mb-1 flex items-center gap-1">
+              <Clock size={16} /> Opening Time
+            </label>
+            <input
+              type="time"
+              name="openingTime"
+              value={formData.openingTime}
+              required
+              onChange={handleChange}
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+
+          {/* Closing Time */}
+          <div>
+            <label className="block text-sm mb-1 flex items-center gap-1">
+              <Clock size={16} /> Closing Time
+            </label>
+            <input
+              type="time"
+              name="closingTime"
+              value={formData.closingTime}
+              required
+              onChange={handleChange}
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
             />
           </div>
 
           {/* Address */}
-          <div>
-            <label className="text-gray-700 font-medium">Address</label>
+          <div className="md:col-span-2">
+            <label className="block text-sm mb-1 flex items-center gap-1">
+              <MapPin size={16} /> Address
+            </label>
             <textarea
               name="address"
-              value={form.address}
+              value={formData.address}
+              required
               onChange={handleChange}
-              rows="3"
-              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
+              rows={3}
+              className="w-full border px-4 py-3 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-400"
             ></textarea>
           </div>
 
-          {/* Contact */}
-          <div>
-            <label className="text-gray-700 font-medium">Contact Number</label>
-            <input
-              type="text"
-              name="contact"
-              value={form.contact}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
-            />
-          </div>
-
           {/* Image Upload */}
-          <div>
-            <label className="text-gray-700 font-medium flex items-center gap-2">
-              <Upload className="text-blue-600" /> Restaurant Image
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-2">
+              Restaurant Image
             </label>
+
+            {previewImg ? (
+              <div className="relative h-40 border rounded-xl overflow-hidden shadow">
+                <img
+                  src={previewImg}
+                  alt="preview"
+                  className="w-full h-full object-cover"
+                />
+
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 bg-white rounded-full p-1 shadow text-red-500"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            ) : (
+              <div
+                onClick={chooseFile}
+                className="h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer text-slate-500 hover:border-orange-500"
+              >
+                <CloudUpload size={32} />
+                <p className="text-sm mt-2">Click or Drop Image Here</p>
+              </div>
+            )}
 
             <input
               type="file"
+              ref={fileInputRef}
               accept="image/*"
+              className="hidden"
               onChange={handleImageChange}
-              className="mt-2"
             />
-
-            {previewImage && (
-              <img
-                src={previewImage}
-                alt="preview"
-                className="w-40 h-32 object-cover rounded-lg mt-3 shadow"
-              />
-            )}
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-lg font-semibold transition"
+            disabled={loading}
+            className={`md:col-span-2 py-3 rounded-xl text-white font-semibold flex justify-center items-center gap-2 mt-2 ${
+              loading
+                ? "bg-orange-400 cursor-not-allowed"
+                : "bg-orange-600 hover:bg-orange-700"
+            }`}
           >
-            Update Restaurant
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Restaurant"
+            )}
           </button>
         </form>
       </div>

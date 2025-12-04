@@ -1,4 +1,3 @@
-
 // models/MenuItem.js
 import mongoose from "mongoose";
 

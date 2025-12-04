@@ -17,11 +17,14 @@ import AdminLayout from "./pages/Admin/AdminLayout.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import AddAdmin from "./pages/Admin/AddAdmin.jsx";
 import Categories from "./pages/Admin/Categories.jsx";
-import Restaurant from "./pages/Admin/RestaurantManagement.jsx";
-import TableList from "./pages/Admin/Tables/TableList.jsx";
-import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";   // ⭐ NEW
-import MenuPage from "./pages/Admin/MenuPage.jsx";
 
+// ⭐ Restaurant Management System
+import Restaurant from "./pages/Admin/RestaurantManagement.jsx";
+import RestaurantView from "./pages/Admin/RestaurantView.jsx"; // ⭐ NEW
+import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";  // USED FOR EDIT + ADD
+
+import TableList from "./pages/Admin/Tables/TableList.jsx";
+import MenuPage from "./pages/Admin/MenuPage.jsx";
 
 // Route Protection
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
@@ -56,10 +59,20 @@ export default function App() {
         <Route path="categories" element={<Categories />} />
         <Route path="menu" element={<MenuPage />} />
 
-
-        {/* ⭐ NEW ROUTE */}
+        {/* ⭐ Restaurant Management Routes */}
         <Route path="restaurant" element={<Restaurant />} />
+        <Route path="restaurant/view/:id" element={<RestaurantView />} />
+
+        {/* ⭐⭐ UPDATED: EDIT RESTAURANT ROUTE */}
+        {/* ----------------------------------------- */}
+        {/* ⬇⬇⬇  THIS IS THE NEWLY ADDED ROUTE  ⬇⬇⬇ */}
+        <Route path="restaurant/edit/:id" element={<AddRestaurant />} />
+        {/* ----------------------------------------- */}
+
         <Route path="tables" element={<TableList />} />
+
+        {/* Optional — Only keep if still used */}
+        <Route path="add-restaurant" element={<AddRestaurant />} />
       </Route>
     </Routes>
   );

@@ -3,7 +3,7 @@ import cloudinary from "../config/cloudinary.js";
 
 /* ===========================================================
    ⭐ GET ALL RESTAURANTS
-   =========================================================== */
+=========================================================== */
 export const getAllRestaurants = async (req, res) => {
   try {
     const restaurants = await Restaurant.find().sort({ createdAt: -1 });
@@ -17,8 +17,8 @@ export const getAllRestaurants = async (req, res) => {
 };
 
 /* ===========================================================
-   ⭐ NEW — GET RESTAURANT BY restaurantId (For Table Auto Fill)
-   =========================================================== */
+   ⭐ NEW — GET RESTAURANT BY restaurantId  
+=========================================================== */
 export const getRestaurantByRestaurantId = async (req, res) => {
   try {
     const { restaurantId } = req.params;
@@ -41,8 +41,8 @@ export const getRestaurantByRestaurantId = async (req, res) => {
 };
 
 /* ===========================================================
-   ⭐ NEW — GET RESTAURANT BY _id
-   =========================================================== */
+   ⭐ GET RESTAURANT BY MongoDB _id  
+=========================================================== */
 export const getRestaurantById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -66,7 +66,7 @@ export const getRestaurantById = async (req, res) => {
 
 /* ===========================================================
    ⭐ ADD RESTAURANT
-   =========================================================== */
+=========================================================== */
 export const addRestaurant = async (req, res) => {
   try {
     const {
@@ -77,13 +77,13 @@ export const addRestaurant = async (req, res) => {
       address,
       openingTime,
       closingTime,
+      email,
+      status,
     } = req.body;
 
     const existing = await Restaurant.findOne({ restaurantId });
     if (existing) {
-      return res.status(400).json({
-        message: "Restaurant ID already exists!",
-      });
+      return res.status(400).json({ message: "Restaurant ID already exists!" });
     }
 
     const newRestaurant = new Restaurant({
@@ -94,26 +94,28 @@ export const addRestaurant = async (req, res) => {
       address,
       openingTime,
       closingTime,
+      email,
+      status: status ?? "Active",
       restaurantImg: req.file ? req.file.path : null,
     });
 
     await newRestaurant.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Restaurant added successfully",
       restaurant: newRestaurant,
     });
-  } catch (error) {
-    res.status(500).json({
+  } catch (err) {
+    return res.status(500).json({
       message: "Server error",
-      error: error.message,
+      error: err.message,
     });
   }
 };
 
 /* ===========================================================
    ⭐ EDIT RESTAURANT
-   =========================================================== */
+=========================================================== */
 export const editRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -125,30 +127,30 @@ export const editRestaurant = async (req, res) => {
       });
     }
 
-    // Delete old image if new uploaded
+    /* 🔥 DELETE OLD IMAGE ONLY IF NEW ONE IS UPLOADED */
     if (req.file && restaurant.restaurantImg) {
-      const publicId = restaurant.restaurantImg
-        .split("/")
-        .pop()
-        .split(".")[0];
-      await cloudinary.uploader.destroy(`restaurants/${publicId}`);
+      try {
+        const parts = restaurant.restaurantImg.split("/restaurants/");
+        const publicId = "restaurants/" + parts[1].split(".")[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (error) {
+        console.log("Cloudinary delete failed:", error.message);
+      }
     }
 
-    // Update fields
+    /* 🔄 UPDATE FIELDS */
     restaurant.restaurantId = req.body.restaurantId || restaurant.restaurantId;
     restaurant.name = req.body.name || restaurant.name;
     restaurant.contact = req.body.contact || restaurant.contact;
     restaurant.type = req.body.type || restaurant.type;
     restaurant.address = req.body.address || restaurant.address;
-    restaurant.openingTime =
-      req.body.openingTime || restaurant.openingTime;
-    restaurant.closingTime =
-      req.body.closingTime || restaurant.closingTime;
+    restaurant.openingTime = req.body.openingTime || restaurant.openingTime;
+    restaurant.closingTime = req.body.closingTime || restaurant.closingTime;
+    restaurant.email = req.body.email || restaurant.email;
+    restaurant.status = req.body.status || restaurant.status;
 
-    // Update image
-    restaurant.restaurantImg = req.file
-      ? req.file.path
-      : restaurant.restaurantImg;
+    /* 🖼 UPDATE IMAGE */
+    restaurant.restaurantImg = req.file ? req.file.path : restaurant.restaurantImg;
 
     await restaurant.save();
 
@@ -166,7 +168,7 @@ export const editRestaurant = async (req, res) => {
 
 /* ===========================================================
    ⭐ DELETE RESTAURANT
-   =========================================================== */
+=========================================================== */
 export const deleteRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -178,13 +180,15 @@ export const deleteRestaurant = async (req, res) => {
       });
     }
 
-    // Delete image
+    /* 🔥 DELETE IMAGE FROM CLOUDINARY */
     if (restaurant.restaurantImg) {
-      const publicId = restaurant.restaurantImg
-        .split("/")
-        .pop()
-        .split(".")[0];
-      await cloudinary.uploader.destroy(`restaurants/${publicId}`);
+      try {
+        const parts = restaurant.restaurantImg.split("/restaurants/");
+        const publicId = "restaurants/" + parts[1].split(".")[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (error) {
+        console.log("Cloudinary delete failed:", error.message);
+      }
     }
 
     await Restaurant.findByIdAndDelete(id);
@@ -199,17 +203,3 @@ export const deleteRestaurant = async (req, res) => {
     });
   }
 };
-
-
-
-
-// import Restaurant from "../models/Restaurant.js";
-
-// export const getAllRestaurants = async (req, res) => {
-//   try {
-//     const restaurants = await Restaurant.find();
-//     res.status(200).json(restaurants);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
