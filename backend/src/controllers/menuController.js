@@ -1,12 +1,27 @@
-import MenuItem from "../models/MenuItem.js";
-
+import MenuItem from "../models/menuModal.js";
+import cloudinary from "../config/cloudinary.js";
 // Add new menu item (Admin)
 export const addMenuItem = async (req, res) => {
   try {
-    const menuItem = new MenuItem({ ...req.body });
+    let imageUrl = "";
+
+    // If an image file is uploaded
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "menuItems", // optional folder
+      });
+      imageUrl = result.secure_url;
+    }
+
+    const menuItem = new MenuItem({
+      ...req.body,
+      image: imageUrl,
+    });
+
     await menuItem.save();
     res.status(201).json({ success: true, data: menuItem });
   } catch (err) {
+    console.log(err);
     res.status(400).json({ success: false, message: err.message });
   }
 };
@@ -30,7 +45,10 @@ export const getAllMenuItems = async (req, res) => {
 export const getMenuItemById = async (req, res) => {
   try {
     const menuItem = await MenuItem.findById(req.params.menuId);
-    if (!menuItem) return res.status(404).json({ success: false, message: "Menu item not found" });
+    if (!menuItem)
+      return res
+        .status(404)
+        .json({ success: false, message: "Menu item not found" });
     res.status(200).json({ success: true, data: menuItem });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -40,8 +58,15 @@ export const getMenuItemById = async (req, res) => {
 // Update menu item (Admin)
 export const updateMenuItem = async (req, res) => {
   try {
-    const menuItem = await MenuItem.findByIdAndUpdate(req.params.menuId, req.body, { new: true, runValidators: true });
-    if (!menuItem) return res.status(404).json({ success: false, message: "Menu item not found" });
+    const menuItem = await MenuItem.findByIdAndUpdate(
+      req.params.menuId,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!menuItem)
+      return res
+        .status(404)
+        .json({ success: false, message: "Menu item not found" });
     res.status(200).json({ success: true, data: menuItem });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -52,8 +77,13 @@ export const updateMenuItem = async (req, res) => {
 export const deleteMenuItem = async (req, res) => {
   try {
     const menuItem = await MenuItem.findByIdAndDelete(req.params.menuId);
-    if (!menuItem) return res.status(404).json({ success: false, message: "Menu item not found" });
-    res.status(200).json({ success: true, message: "Menu item deleted successfully" });
+    if (!menuItem)
+      return res
+        .status(404)
+        .json({ success: false, message: "Menu item not found" });
+    res
+      .status(200)
+      .json({ success: true, message: "Menu item deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
