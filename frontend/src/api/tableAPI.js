@@ -1,7 +1,15 @@
-import axios from './axiosClient';
+import axios from "axios";
 
+const API_URL = "http://localhost:5000/api/v1/tables";
 
-export const addTable = (data) => axios.post('/api/v1/tables', data);
-export const getTablesByRestaurant = (restaurantId) => axios.get(`/api/v1/tables/restaurant/${restaurantId}`);
-export const getTable = (id) => axios.get(`/api/v1/tables/${id}`);
-export const deleteTable = (id) => axios.delete(`/api/v1/tables/${id}`);
+// Get all tables
+export const fetchTables = async () => {
+  const res = await axios.get(API_URL);
+  return res.data.tables; // FIXED
+};
+
+// Add table
+export const createTable = async (tableData) => {
+  const res = await axios.post(API_URL, tableData);
+  return res.data.table; // FIXED
+};

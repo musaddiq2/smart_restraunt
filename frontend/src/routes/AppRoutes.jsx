@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// GLOBAL
+// GLOBAL COMPONENTS
 import Navbar from "../components/Navbar";
 
 // USER PAGES
@@ -23,13 +23,13 @@ import AddAdmin from "../pages/Admin/AddAdmin";
 
 // TABLE MODULE
 import AddTable from "../pages/Admin/Tables/AddTable";
-import TableList from "../pages/Admin/Tables/TableList";
+import TableManagement from "../pages/Admin/Tables/TableManagement";
 import EditTable from "../pages/Admin/Tables/EditTable";
 import TableQR from "../pages/Admin/Tables/TableQR";
 
-// LAYOUTS
-import AdminLayout from "../layout/AdminLayout";
-import ProtectedRoute from "../routes/ProtectedRoute";
+// LAYOUTS & ROUTE GUARDS
+import AdminLayout from "../layouts/AdminLayout";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -59,6 +59,7 @@ export default function AppRoutes() {
           {/* Default → /admin/dashboard */}
           <Route index element={<Navigate to="dashboard" replace />} />
 
+          {/* Dashboard & Categories */}
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="categories" element={<Categories />} />
 
@@ -67,17 +68,17 @@ export default function AppRoutes() {
           {/* ====================== */}
           <Route path="restaurants" element={<RestaurantManagement />} />
           <Route path="restaurants/add" element={<AddRestaurant />} />
-          <Route path="edit-restaurant/:id" element={<EditRestaurant />} />
+          <Route path="restaurants/edit/:id" element={<EditRestaurant />} />
 
           {/* ====================== */}
-          {/* ADMIN / STAFF ADD */}
+          {/* ADMIN / STAFF MODULE */}
           {/* ====================== */}
           <Route path="add-admin" element={<AddAdmin />} />
 
           {/* ====================== */}
           {/* TABLE MODULE */}
           {/* ====================== */}
-          <Route path="tables" element={<TableList />} />
+          <Route path="tables" element={<TableManagement />} />
           <Route path="tables/add" element={<AddTable />} />
           <Route path="tables/edit/:id" element={<EditTable />} />
           <Route path="tables/qr/:id" element={<TableQR />} />
@@ -89,7 +90,7 @@ export default function AppRoutes() {
         <Route
           path="*"
           element={
-            <div className="p-10 text-center text-xl font-bold">
+            <div className="p-10 text-center text-xl font-bold text-red-600">
               404 - Page Not Found
             </div>
           }

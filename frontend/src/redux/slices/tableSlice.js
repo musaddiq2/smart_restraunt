@@ -1,118 +1,101 @@
+// src/redux/slices/tableSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { axiosInstance } from "../../utils/axiosInstance"; // ✅ use shared axios instance
+import axios from "axios";
 
-// 🟢 BASE URL FOR ALL TABLE APIs
-const API = `${import.meta.env.VITE_API_BASE_URL}/tables`;
-console.log("Tables API:", API);
+const API = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1"}/tables`;
 
-// ========================
-// FETCH ALL TABLES
-// ========================
+// GET all tables
 export const fetchTables = createAsyncThunk(
-  "tables/fetchTables",
-  async (_, thunkAPI) => {
+  "tables/fetchAll",
+  async (_, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.get("/tables");
-      return res.data.data; // backend returns { success, data: [...] }
+      const res = await axios.get(API);
+
+      // MUST return ONLY array
+      return res.data.tables; 
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      return rejectWithValue(err.response?.data || "Error fetching tables");
     }
   }
 );
 
-// ========================
-// ADD TABLE
-// ========================
-export const addTable = createAsyncThunk(
-  "tables/addTable",
-  async (payload, thunkAPI) => {
+// CREATE table
+export const createTable = createAsyncThunk(
+  "tables/create",
+  async (tableData, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post("/tables", payload);
-      return res.data.data;
+      const res = await axios.post(API, tableData);
+      return res.data.table; // MUST be object
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      return rejectWithValue(err.response?.data || "Error creating table");
     }
   }
 );
 
-// ========================
-// UPDATE TABLE
-// ========================
+// UPDATE table
 export const updateTable = createAsyncThunk(
-  "tables/updateTable",
-  async ({ id, updatedData }, thunkAPI) => {
+  "tables/update",
+  async ({ id, data }, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.put(`/tables/${id}`, updatedData);
-      return res.data.data;
+      const res = await axios.put(`${API}/${id}`, data);
+      return res.data.table; // MUST be object
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      return rejectWithValue(err.response?.data || "Error updating table");
     }
   }
 );
 
-// ========================
-// DELETE TABLE
-// ========================
+// DELETE table
 export const deleteTable = createAsyncThunk(
-  "tables/deleteTable",
-  async (id, thunkAPI) => {
+  "tables/delete",
+  async (id, { rejectWithValue }) => {
     try {
-      await axiosInstance.delete(`/tables/${id}`);
+      await axios.delete(`${API}/${id}`);
       return id;
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      return rejectWithValue(err.response?.data || "Error deleting table");
     }
   }
 );
 
-// ========================
-// SLICE
-// ========================
 const tableSlice = createSlice({
   name: "tables",
   initialState: {
-    list: [],
+    list: [],     // MUST BE ARRAY
     loading: false,
-    error: null,
+    error: null
   },
-  reducers: {},
+
   extraReducers: (builder) => {
     builder
-      // ---------------- FETCH ----------------
+      // Fetch
       .addCase(fetchTables.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchTables.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload || [];
+        state.list = action.payload;  // ALWAYS array
       })
       .addCase(fetchTables.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // ---------------- ADD ----------------
-      .addCase(addTable.fulfilled, (state, action) => {
+      // Create
+      .addCase(createTable.fulfilled, (state, action) => {
         state.list.push(action.payload);
       })
 
-      // ---------------- UPDATE ----------------
+      // Update
       .addCase(updateTable.fulfilled, (state, action) => {
+        const updated = action.payload;
         state.list = state.list.map((t) =>
-          t._id === action.payload._id ? action.payload : t
+          t._id === updated._id ? updated : t
         );
       })
 
-      // ---------------- DELETE ----------------
+      // Delete
       .addCase(deleteTable.fulfilled, (state, action) => {
         state.list = state.list.filter((t) => t._id !== action.payload);
       });

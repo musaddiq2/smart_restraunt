@@ -18,7 +18,8 @@ export default function RestaurantDashboard() {
     // Fetch restaurants
     const fetchRestaurants = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/v1/restaurants");
+            const res = await axios.get("http://localhost:5000/api/v1/restaurant");
+
             const data = res.data.restaurants || [];
             setRestaurants(data);
 
@@ -44,7 +45,7 @@ export default function RestaurantDashboard() {
         if (!window.confirm("Are you sure you want to delete this restaurant?")) return;
 
         try {
-            await axios.delete(`http://localhost:5000/api/v1/restaurants/${id}`);
+            await axios.delete(`http://localhost:5000/api/v1/restaurant/${id}`);
             fetchRestaurants();
         } catch (error) {
             console.error(error);
