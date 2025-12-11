@@ -7,18 +7,24 @@ const BASE_URL = "http://localhost:5000/api/v1/menus";
 
 // ==========================================
 // 1) FETCH MENUS BY RESTAURANT
-// ==========================================
+
+
 export const fetchMenus = createAsyncThunk(
   "menu/fetchMenus",
   async (restaurantId, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`${BASE_URL}?restaurantId=${restaurantId}`);
-      return res.data?.data ?? res.data; // handle both formats
+      const url = restaurantId
+        ? `${BASE_URL}?restaurantId=${restaurantId}`  // with filter
+        : BASE_URL;                                   // all menus, no param
+
+      const res = await axios.get(url);
+      return res.data?.data ?? res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
+
 
 // ==========================================
 // 2) ADD MENU
@@ -144,3 +150,6 @@ const menuSlice = createSlice({
 
 export const { clearMenuError } = menuSlice.actions;
 export default menuSlice.reducer;
+
+
+
