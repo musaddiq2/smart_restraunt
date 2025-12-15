@@ -3,11 +3,7 @@ import cloudinary from "../config/cloudinary.js";
 
 /* ===========================================================
    ⭐ GET ALL RESTAURANTS
-<<<<<<< HEAD
-   =========================================================== */
-=======
 =========================================================== */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 export const getAllRestaurants = async (req, res) => {
   try {
     const restaurants = await Restaurant.find().sort({ createdAt: -1 });
@@ -21,13 +17,8 @@ export const getAllRestaurants = async (req, res) => {
 };
 
 /* ===========================================================
-<<<<<<< HEAD
-   ⭐ NEW — GET RESTAURANT BY restaurantId (For Table Auto Fill)
-   =========================================================== */
-=======
    ⭐ NEW — GET RESTAURANT BY restaurantId  
 =========================================================== */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 export const getRestaurantByRestaurantId = async (req, res) => {
   try {
     const { restaurantId } = req.params;
@@ -50,13 +41,8 @@ export const getRestaurantByRestaurantId = async (req, res) => {
 };
 
 /* ===========================================================
-<<<<<<< HEAD
-   ⭐ NEW — GET RESTAURANT BY _id
-   =========================================================== */
-=======
    ⭐ GET RESTAURANT BY MongoDB _id  
 =========================================================== */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 export const getRestaurantById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -80,11 +66,7 @@ export const getRestaurantById = async (req, res) => {
 
 /* ===========================================================
    ⭐ ADD RESTAURANT
-<<<<<<< HEAD
-   =========================================================== */
-=======
 =========================================================== */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 export const addRestaurant = async (req, res) => {
   try {
     const {
@@ -114,11 +96,8 @@ export const addRestaurant = async (req, res) => {
       address,
       openingTime,
       closingTime,
-<<<<<<< HEAD
-=======
       email,
       status: status ?? "Active",
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
       restaurantImg: req.file ? req.file.path : null,
     });
 
@@ -128,28 +107,17 @@ export const addRestaurant = async (req, res) => {
       message: "Restaurant added successfully",
       restaurant: newRestaurant,
     });
-<<<<<<< HEAD
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
-=======
   } catch (err) {
     return res.status(500).json({
       message: "Server error",
       error: err.message,
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
     });
   }
 };
 
 /* ===========================================================
    ⭐ EDIT RESTAURANT
-<<<<<<< HEAD
-   =========================================================== */
-=======
 =========================================================== */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 export const editRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -161,18 +129,6 @@ export const editRestaurant = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
-    // Delete old image if new uploaded
-    if (req.file && restaurant.restaurantImg) {
-      const publicId = restaurant.restaurantImg
-        .split("/")
-        .pop()
-        .split(".")[0];
-      await cloudinary.uploader.destroy(`restaurants/${publicId}`);
-    }
-
-    // Update fields
-=======
     /* 🔥 DELETE OLD IMAGE ONLY IF NEW ONE IS UPLOADED */
     if (req.file && restaurant.restaurantImg) {
       try {
@@ -185,23 +141,11 @@ export const editRestaurant = async (req, res) => {
     }
 
     /* 🔄 UPDATE FIELDS */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
     restaurant.restaurantId = req.body.restaurantId || restaurant.restaurantId;
     restaurant.name = req.body.name || restaurant.name;
     restaurant.contact = req.body.contact || restaurant.contact;
     restaurant.type = req.body.type || restaurant.type;
     restaurant.address = req.body.address || restaurant.address;
-<<<<<<< HEAD
-    restaurant.openingTime =
-      req.body.openingTime || restaurant.openingTime;
-    restaurant.closingTime =
-      req.body.closingTime || restaurant.closingTime;
-
-    // Update image
-    restaurant.restaurantImg = req.file
-      ? req.file.path
-      : restaurant.restaurantImg;
-=======
     restaurant.openingTime = req.body.openingTime || restaurant.openingTime;
     restaurant.closingTime = req.body.closingTime || restaurant.closingTime;
     restaurant.email = req.body.email || restaurant.email;
@@ -209,7 +153,6 @@ export const editRestaurant = async (req, res) => {
 
     /* 🖼 UPDATE IMAGE */
     restaurant.restaurantImg = req.file ? req.file.path : restaurant.restaurantImg;
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 
     await restaurant.save();
 
@@ -227,11 +170,7 @@ export const editRestaurant = async (req, res) => {
 
 /* ===========================================================
    ⭐ DELETE RESTAURANT
-<<<<<<< HEAD
-   =========================================================== */
-=======
 =========================================================== */
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 export const deleteRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
@@ -243,15 +182,6 @@ export const deleteRestaurant = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
-    // Delete image
-    if (restaurant.restaurantImg) {
-      const publicId = restaurant.restaurantImg
-        .split("/")
-        .pop()
-        .split(".")[0];
-      await cloudinary.uploader.destroy(`restaurants/${publicId}`);
-=======
     /* 🔥 DELETE IMAGE FROM CLOUDINARY */
     if (restaurant.restaurantImg) {
       try {
@@ -261,7 +191,6 @@ export const deleteRestaurant = async (req, res) => {
       } catch (error) {
         console.log("Cloudinary delete failed:", error.message);
       }
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
     }
 
     await Restaurant.findByIdAndDelete(id);

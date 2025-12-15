@@ -11,15 +11,10 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import orderRoutes from "./routes/OrderRoutes.js";
 import menuRoutes from "./routes/menuRoutes.js";
 import userRoutes from "./routes/UserRoutes.js";
-<<<<<<< HEAD
-import adminRoutes from "./routes/adminRoutes.js"; // ✅ Added
-import tableRoutes from './routes/tableRoutes.js';
-=======
 import adminRoutes from "./routes/adminRoutes.js";
 import tableRoutes from "./routes/tableRoutes.js";
 
 // Middleware
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 // Initialize dotenv
@@ -50,11 +45,7 @@ app.use("/api/v1/restaurant", restaurantRoutes);
 app.use("/api/v1/menus", menuRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
-<<<<<<< HEAD
-app.use('/api/v1/tables', tableRoutes);
-=======
 app.use("/api/v1/tables", tableRoutes);
->>>>>>> ceb071b784df9ecba6a675cee78975bfde35ff0b
 
 // ✅ Test Route
 app.get("/", (req, res) => res.send("🍽️ Smart Restaurant API is running..."));
