@@ -1,36 +1,27 @@
 import express from "express";
 import {
-  addTable,
   getTables,
+  getTableById,
+  addTable,
   updateTable,
   deleteTable,
 } from "../controllers/tableController.js";
-// optionally protect with auth middleware if needed
-// import { protect, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// ---------------- TABLE ROUTES ----------------
-
-/**
- * GET all tables
- */
+// GET all tables
 router.get("/", getTables);
 
-/**
- * ADD a new table
- * Supports: restaurantId, restaurantName, QR auto-generation
- */
+// GET a single table
+router.get("/:id", getTableById);
+
+// CREATE table
 router.post("/", addTable);
 
-/**
- * UPDATE table by ID
- */
+// UPDATE table
 router.put("/:id", updateTable);
 
-/**
- * DELETE table by ID
- */
+// DELETE table
 router.delete("/:id", deleteTable);
 
 export default router;

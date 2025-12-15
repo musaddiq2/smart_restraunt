@@ -18,9 +18,9 @@ export default function RestaurantDashboard() {
     // Fetch restaurants
     const fetchRestaurants = async () => {
         try {
-            const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
-            const res = await axios.get(`${API_URL}/restaurant`);
-            const data = res.data.restaurants || res.data.data || res.data || [];
+            const res = await axios.get("http://localhost:5000/api/v1/restaurant");
+
+            const data = res.data.restaurants || [];
             setRestaurants(data);
 
             setStats({
@@ -45,8 +45,7 @@ export default function RestaurantDashboard() {
         if (!window.confirm("Are you sure you want to delete this restaurant?")) return;
 
         try {
-            const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
-            await axios.delete(`${API_URL}/restaurant/${id}`);
+            await axios.delete(`http://localhost:5000/api/v1/restaurant/${id}`);
             fetchRestaurants();
         } catch (error) {
             console.error(error);

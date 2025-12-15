@@ -39,25 +39,26 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
   };
 
   const handleImageChange = (e) => handleImageSelection(e.target.files[0]);
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files.length > 0) handleImageSelection(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length > 0)
+      handleImageSelection(e.dataTransfer.files[0]);
   };
+
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
+
   const handleDragLeave = () => setIsDragging(false);
+
   const removeImage = () => {
-    setImage(null);
-    setPreviewImg(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const triggerFileInput = () => fileInputRef.current.click();
-
-  // Handle form input
+  // Handle input fields
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -80,8 +81,10 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
 
     const token = localStorage.getItem("token");
 
+    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/restaurant/add`;
+
     try {
-      await axios.post( `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/restaurant/add`, data, {
+      await axios.post(apiUrl, data, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -89,10 +92,11 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
       });
 
       toast.success("🎉 Restaurant Added Successfully!");
-
-      onSuccess(); // Refresh + close modal
+      onSuccess(); // refresh + close modal
     } catch (error) {
-      toast.error(error.response?.data?.message || "❌ Failed to add restaurant");
+      toast.error(
+        error.response?.data?.message || "❌ Failed to add restaurant"
+      );
     }
 
     setLoading(false);
@@ -114,9 +118,7 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
         {/* HEADER */}
         <header className="text-center mb-6">
           <Store className="text-4xl text-orange-600 mx-auto mb-2" />
-          <h1 className="text-2xl font-bold text-slate-800">
-            Add New Restaurant
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-800">Add New Restaurant</h1>
           <p className="text-slate-500 text-sm">
             Fill in the details below to add a new restaurant.
           </p>
@@ -125,7 +127,7 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
         {/* FORM */}
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* Restaurant Name */}
+          {/* Name */}
           <div className="col-span-2">
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Restaurant Name
@@ -195,7 +197,7 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
             </select>
           </div>
 
-          {/* Opening Time */}
+          {/* Opening */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Opening Time
@@ -211,7 +213,7 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
             />
           </div>
 
-          {/* Closing Time */}
+          {/* Closing */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Closing Time
@@ -244,7 +246,7 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
             ></textarea>
           </div>
 
-          {/* IMAGE UPLOAD */}
+          {/* Image Upload */}
           <div className="col-span-2">
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Restaurant Image
@@ -257,7 +259,6 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
                   alt="Restaurant Preview"
                   className="w-full h-full object-cover rounded-xl"
                 />
-
                 <button
                   type="button"
                   onClick={removeImage}

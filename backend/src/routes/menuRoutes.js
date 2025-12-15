@@ -1,26 +1,21 @@
 import express from "express";
-import MenuItem from "../models/MenuItem.js";
+import upload from "../config/multer.js";
+import {
+  addMenuItem,
+  getAllMenuItems,
+  getMenuItemById,
+  updateMenuItem,
+  deleteMenuItem,
+} from "../controllers/menuController.js";
 
 const router = express.Router();
 
-// ✅ Example routes:
-router.get("/", async (req, res) => {
-  try {
-    const menu = await MenuItem.find();
-    res.json(menu);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+router.get("/", getAllMenuItems);
+router.get("/:menuId", getMenuItemById);
 
-router.post("/", async (req, res) => {
-  try {
-    const newItem = new MenuItem(req.body);
-    const saved = await newItem.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
+// Use Multer for file upload in POST and PUT
+router.post("/", upload.single("image"), addMenuItem);
+router.put("/:menuId", upload.single("image"), updateMenuItem);
+router.delete("/:menuId", deleteMenuItem);
 
 export default router;

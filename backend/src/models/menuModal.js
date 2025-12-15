@@ -22,12 +22,35 @@ const MenuItemSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["Starters", "Main Course", "Desserts", "Beverages", "Others"],
+      // enum: ["Starters", "Main Course", "Desserts", "Beverages", "Others"],
+
+      enum : [ "All",
+  "Starters / Appetizers",
+  "Soups",
+  "Salads",
+  "Main Course - Veg",
+  "Main Course - Non Veg",
+  "Breads",
+  "Rice & Biryani",
+  "Chinese",
+  "Fast Food",
+  "Pizzas",
+  "Burgers",
+  "Sandwiches",
+  "Pasta",
+  "Combo Meals",
+  "Desserts",
+  "Ice Creams",
+  "Beverages",
+  "Milkshakes",
+  "Fresh Juices",
+  "Snacks",
+  "Others"],
       default: "Others",
     },
     image: {
-      type: String,
-      default: "https://via.placeholder.com/150",
+      type: String, // Cloudinary URL
+      required: false,
     },
     isAvailable: {
       type: Boolean,
@@ -39,13 +62,13 @@ const MenuItemSchema = new mongoose.Schema(
       min: [0, "Rating cannot be below 0"],
       max: [5, "Rating cannot be above 5"],
     },
-    veg: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  { timestamps: true }
+    // veg: {
+    //   type: Boolean,
+    //   default: true,
+    // },
+  }
+  // { timestamps: true }
 );
 
-const MenuItem = mongoose.model("MenuItem", MenuItemSchema);
-export default MenuItem;
+const menuModal = mongoose.model("MenuItem", MenuItemSchema);
+export default menuModal;

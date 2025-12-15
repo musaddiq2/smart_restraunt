@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { MdCategory } from "react-icons/md";
-
 import {
   LayoutDashboard,
   ShoppingBag,
   Utensils,
   UserPlus,
-  Building2,
   Settings,
   LogOut,
-  ChevronRight,
   User,
+  Building2,
   QrCode,
 } from "lucide-react";
+
+import { motion } from "framer-motion";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -32,17 +32,17 @@ export default function Sidebar() {
     }
   }, []);
 
-  // ⭐ MENU ITEMS UPDATED
+  // ⭐ MENU ITEMS
   const menuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin/dashboard" },
-    { name: "Orders", icon: <ShoppingBag size={20} />, path: "/admin/orders" },
-    { name: "Menu", icon: <Utensils size={20} />, path: "/admin/menu" },
-    { name: "Categories", icon: <MdCategory size={20} />, path: "/admin/categories" },
-    { name: "Restaurant Management", icon: <Building2 size={20} />, path: "/admin/restaurant" },
-    { name: "Add Admin", icon: <UserPlus size={20} />, path: "/admin/add-admin" },
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { name: "Orders", icon: ShoppingBag, path: "/admin/orders" },
+    { name: "Menu", icon: Utensils, path: "/admin/menu" },
+    { name: "Categories", icon: MdCategory, path: "/admin/categories", isReactIcon: true },
+    { name: "Restaurant Management", icon: Building2, path: "/admin/restaurant" },
+    { name: "Add Admin", icon: UserPlus, path: "/admin/add-admin" },
 
-    // ⭐ NEW — TABLES & QR
-    { name: "Tables & QR", icon: <QrCode size={20} />, path: "/admin/tables" },
+    // ⭐ TABLES & QR
+    { name: "Tables & QR", icon: QrCode, path: "/admin/tables" },
   ];
 
   const handleLogout = () => {
@@ -57,11 +57,19 @@ export default function Sidebar() {
       {/* Logo / User Section */}
       <div className="p-6 text-center border-b border-gray-100">
         <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-          <span className="text-rose-600"><u>Admin</u></span>
+          <span className="text-rose-600">
+            <u>Admin</u>
+          </span>
         </h1>
 
         <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col items-center">
-          <User size={20} className="text-rose-500 mb-1" />
+          <motion.div
+            whileHover={{ scale: 1.2, rotate: 10 }}
+            transition={{ type: "spring", stiffness: 250 }}
+          >
+            <User size={22} className="text-rose-500 mb-1" />
+          </motion.div>
+
           <p className="text-sm font-semibold text-slate-700 truncate w-full px-2">
             {userName}
           </p>
@@ -71,29 +79,40 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            end
-            className={({ isActive }) =>
-              `flex items-center justify-between p-3 rounded-xl transition-all duration-200 text-base font-medium
-              ${
-                isActive
-                  ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
-                  : "text-slate-700 hover:bg-gray-100 hover:text-rose-600"
-              }`
-            }
-          >
-            <div className="flex items-center gap-3">
-              {item.icon}
-              <span>{item.name}</span>
-            </div>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
 
-            {/* Right arrow when active */}
-            <ChevronRight size={18} className="opacity-70" />
-          </NavLink>
-        ))}
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-base font-medium
+                ${
+                  isActive
+                    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
+                    : "text-slate-700 hover:bg-gray-100 hover:text-rose-600"
+                }`
+              }
+            >
+              {/* Animated Icon */}
+              <motion.div
+                whileHover={{ scale: 1.3, rotate: 8 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {item.isReactIcon ? (
+                  <MdCategory size={20} />
+                ) : (
+                  <Icon size={20} />
+                )}
+              </motion.div>
+
+              <span>{item.name}</span>
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* Settings + Logout */}
@@ -113,13 +132,15 @@ export default function Sidebar() {
           <span>Settings</span>
         </NavLink>
 
-        <button
+        <motion.button
           onClick={handleLogout}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className="flex items-center gap-3 p-3 w-full text-left text-red-500 hover:bg-red-50 rounded-xl transition-all font-medium"
         >
           <LogOut size={18} />
           <span>Logout</span>
-        </button>
+        </motion.button>
       </div>
 
       {/* Footer */}
