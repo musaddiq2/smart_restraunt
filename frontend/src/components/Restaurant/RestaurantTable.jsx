@@ -21,7 +21,7 @@ export default function RestaurantTable({ data, onEdit, onDelete }) {
               <td className="px-4 py-3">
                 {r.restaurantImg ? (
                   <img
-                    src={`http://localhost:5000/uploads/restaurants/${r.restaurantImg}`}
+                    src={`${import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:5000'}/uploads/restaurants/${r.restaurantImg}`}
                     alt={r.name}
                     className="w-16 h-12 object-cover rounded"
                   />

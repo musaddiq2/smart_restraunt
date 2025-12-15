@@ -33,8 +33,9 @@ export default function Register() {
       return alert("Passwords do not match!");
 
     try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
       const { data } = await axios.post(
-        "http://localhost:5000/api/v1/auth/register",
+        `${API_URL}/auth/register`,
         formData
       );
       alert(`🎉 Welcome ${data.user.name}!`);

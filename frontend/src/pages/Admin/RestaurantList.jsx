@@ -1,88 +1,185 @@
-import React, { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Store, Edit, Trash2, Search } from "lucide-react";
 
-const RestaurantList = () => {
+export default function RestaurantList() {
+  const [restaurants, setRestaurants] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [sortType, setSortType] = useState("az");
+
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+  const BASE_URL = `${API_URL}/restaurant`;
 
-  const [restaurants, setRestaurants] = useState([
-    {
-      id: 1,
-      name: "Bismillah Restaurant",
-      category: "Indian",
-      location: "Aurangabad",
-    },
-    {
-      id: 2,
-      name: "Italiano",
-      category: "Italian",
-      location: "Mumbai",
-    },
-  ]);
+  // 👉 Fetch Restaurants
+  const fetchRestaurants = async () => {
+    try {
+      const res = await axios.get(BASE_URL);
+      const data = res.data.restaurants || [];
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this restaurant?")) {
-      setRestaurants(restaurants.filter((r) => r.id !== id));
+      setRestaurants(data);
+      setFiltered(data);
+    } catch (error) {
+      console.error("Error fetching restaurants:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  // 👉 Delete Restaurant
+  const deleteRestaurant = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this restaurant?"))
+      return;
+
+    try {
+      await axios.delete(`${BASE_URL}/${id}`);
+      alert("Restaurant deleted!");
+      fetchRestaurants();
+    } catch (error) {
+      alert("Error deleting restaurant");
+      console.error(error);
+    }
+  };
+
+  // 👉 Edit
+  const editRestaurant = (id) => {
+    navigate(`/admin/edit-restaurant/${id}`);
+  };
+
+  // 👉 Search Filter
+  useEffect(() => {
+    let results = [...restaurants];
+
+    if (search.trim() !== "") {
+      results = results.filter((r) =>
+        r.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Sorting logic
+    if (sortType === "az") {
+      results.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortType === "za") {
+      results.sort((a, b) => b.name.localeCompare(a.name));
+    } else if (sortType === "newest") {
+      results.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    } else if (sortType === "oldest") {
+      results.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      );
+    }
+
+    setFiltered(results);
+  }, [search, sortType, restaurants]);
+
+  if (loading)
+    return <p className="text-center py-10 text-rose-500 font-semibold">Loading Restaurants...</p>;
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Restaurant List</h1>
-        <button
-          onClick={() => navigate("/admin/add-restaurant")}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-rose-100 mt-8">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <Store size={24} className="text-rose-600" />
+          Restaurant Partner List
+        </h2>
+
+        {/* Search box */}
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search restaurant..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-rose-400 outline-none"
+          />
+        </div>
+
+        {/* Sorting */}
+        <select
+          value={sortType}
+          onChange={(e) => setSortType(e.target.value)}
+          className="px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-rose-400 outline-none"
         >
-          Add Restaurant
-        </button>
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
       </div>
 
-      <div className="overflow-x-auto bg-white shadow rounded">
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-100">
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-rose-50">
             <tr>
-              <th className="px-4 py-2">#</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Category</th>
-              <th className="px-4 py-2">Location</th>
-              <th className="px-4 py-2">Actions</th>
+              <th className="px-6 py-3 text-left">ID</th>
+              <th className="px-6 py-3 text-left">Name</th>
+              <th className="px-6 py-3 text-left">Type</th>
+              <th className="px-6 py-3 text-left">Status</th>
+              <th className="px-6 py-3 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {restaurants.map((r, index) => (
-              <tr key={r.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-2">{index + 1}</td>
-                <td className="px-4 py-2">{r.name}</td>
-                <td className="px-4 py-2">{r.category}</td>
-                <td className="px-4 py-2">{r.location}</td>
-                <td className="px-4 py-2 space-x-2">
-                  <button
-                    onClick={() => navigate(`/admin/edit-restaurant/${r.id}`)}
-                    className="px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 transition"
+
+          <tbody className="bg-white divide-y divide-slate-200">
+            {filtered.map((restaurant) => (
+              <tr key={restaurant._id} className="hover:bg-rose-50">
+                <td className="px-6 py-4 text-rose-600 font-semibold">
+                  {restaurant.restaurantId}
+                </td>
+                <td className="px-6 py-4 font-semibold">{restaurant.name}</td>
+                <td className="px-6 py-4">{restaurant.type}</td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      restaurant.status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(r.id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                  >
-                    Delete
-                  </button>
+                    {restaurant.status || "Active"}
+                  </span>
+                </td>
+
+                <td className="px-6 py-4 text-center">
+                  <div className="flex justify-center gap-3">
+                    {/* Edit */}
+                    <button
+                      onClick={() => editRestaurant(restaurant._id)}
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50"
+                    >
+                      <Edit size={18} />
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      onClick={() => deleteRestaurant(restaurant._id)}
+                      className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
-            {restaurants.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center py-4 text-gray-500">
-                  No restaurants found.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
+
+      <p className="text-sm text-slate-500 mt-4">
+        Showing {filtered.length} Restaurants
+      </p>
     </div>
   );
-};
-
-export default RestaurantList;
+}

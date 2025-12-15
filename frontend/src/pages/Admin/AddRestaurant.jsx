@@ -103,8 +103,9 @@ export default function AddRestaurant() {
 
     // NOTE: In a real environment, you should use the token from state/context
     const token = localStorage.getItem("token"); 
-    const apiKey = ""; // API Key placeholder as per instructions
-    const apiUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1"}/restaurants/add`;
+    console.log("cheking token:", token);
+    
+    const apiUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1"}/restaurant/add`;
 
 
     try {

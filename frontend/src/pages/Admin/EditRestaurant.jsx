@@ -1,210 +1,167 @@
-import React, { useState, useEffect } from "react";
-import Swal from "sweetalert2";
-import { useNavigate, useParams } from "react-router-dom";
-import axios from "../../api/axiosClient"; // your axios instance
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { Upload, Save } from "lucide-react";
 
 export default function EditRestaurant() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    restaurantId: "",
+  const [form, setForm] = useState({
     name: "",
-    contact: "",
     type: "",
     address: "",
-    openingTime: "",
-    closingTime: "",
+    contact: "",
   });
 
-  const [image, setImage] = useState(null);
-  const [previewImg, setPreviewImg] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
+  const [restaurantImg, setRestaurantImg] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch restaurant data on mount
-  useEffect(() => {
-    const fetchRestaurant = async () => {
-      try {
-        const res = await axios.get(`/restaurants/${id}`, { withCredentials: true });
-        const data = res.data;
-        setFormData({
-          restaurantId: data.restaurantId,
-          name: data.name,
-          contact: data.contact,
-          type: data.type,
-          address: data.address,
-          openingTime: data.openingTime,
-          closingTime: data.closingTime,
-        });
-        setPreviewImg(data.restaurantImgUrl || null); // Existing image URL
-      } catch (err) {
-        Swal.fire({
-          title: "Error!",
-          text: err.response?.data?.message || "Failed to fetch restaurant data",
-          icon: "error",
-        });
-      }
-    };
+  // Fetch restaurant by ID
+  const loadRestaurant = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+      const res = await axios.get(
+        `${API_URL}/restaurant/${id}`
+      );
 
-    fetchRestaurant();
-  }, [id]);
+      const data = res.data.restaurant;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+      setForm({
+        name: data.name,
+        type: data.type || "",
+        address: data.address || "",
+        contact: data.contact || "",
+      });
+
+      setPreviewImage(data.restaurantImg || "");
+    } catch (error) {
+      console.error("Error loading restaurant:", error);
+      alert("Restaurant not found!");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    loadRestaurant();
+  }, []);
+
+  // Handle text fields
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Handle image selection
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setImage(file);
-    if (file) {
-      setPreviewImg(URL.createObjectURL(file));
-    }
+    setRestaurantImg(file);
+    setPreviewImage(URL.createObjectURL(file));
   };
 
+  // Submit update form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    const data = new FormData();
-    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
-    if (image) data.append("restaurantImg", image);
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("type", form.type);
+    formData.append("address", form.address);
+    formData.append("contact", form.contact);
 
-    try {
-      await axios.put(`/restaurants/update/${id}`, data, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      Swal.fire({
-        title: "✅ Restaurant Updated Successfully!",
-        text: "Your restaurant details have been updated.",
-        icon: "success",
-        confirmButtonColor: "#ff7043",
-      });
-
-      navigate("/admin/restaurants");
-    } catch (err) {
-      Swal.fire({
-        title: "Error!",
-        text: err.response?.data?.message || "Failed to update restaurant",
-        icon: "error",
-      });
+    if (restaurantImg) {
+      formData.append("restaurantImg", restaurantImg);
     }
 
-    setLoading(false);
+    try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+      await axios.put(
+        `${API_URL}/restaurant/${id}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      alert("Restaurant updated successfully!");
+      navigate("/admin/restaurant");
+    } catch (error) {
+      console.error(error);
+      alert("Error updating restaurant");
+    }
   };
 
+  if (loading)
+    return (
+      <p className="text-center py-10 text-lg font-medium">
+        Loading restaurant...
+      </p>
+    );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex justify-center items-center py-10">
-      <div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-10 border border-orange-200 animate-fadeIn">
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-2xl p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+          <Save className="text-orange-600" /> Edit Restaurant
+        </h2>
 
-        <h1 className="text-4xl font-bold text-orange-600 text-center mb-8">
-          🍽 Edit Restaurant
-        </h1>
+        <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-5">
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          {/* Restaurant Name */}
-          <div className="col-span-2">
-            <label className="font-semibold text-gray-700">Restaurant Name</label>
+          {/* Name */}
+          <div>
+            <label className="text-gray-700 font-medium">Restaurant Name</label>
             <input
               type="text"
               name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Ex: The Spice House"
-              required
-              className="w-full mt-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-orange-400"
-            />
-          </div>
-
-          {/* Restaurant ID */}
-          <div>
-            <label className="font-semibold text-gray-700">Restaurant ID</label>
-            <input
-              type="text"
-              name="restaurantId"
-              value={formData.restaurantId}
-              readOnly
-              className="w-full mt-1 px-4 py-3 rounded-xl border bg-gray-100 cursor-not-allowed"
-            />
-          </div>
-
-          {/* Contact */}
-          <div>
-            <label className="font-semibold text-gray-700">Restaurant Contact</label>
-            <input
-              type="text"
-              name="contact"
-              value={formData.contact}
+              value={form.name}
               onChange={handleChange}
               required
-              placeholder="Ex: +91 9876543210"
-              className="w-full mt-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-orange-400"
+              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
             />
           </div>
 
           {/* Type */}
           <div>
-            <label className="font-semibold text-gray-700">Restaurant Type</label>
-            <select
+            <label className="text-gray-700 font-medium">Type</label>
+            <input
+              type="text"
               name="type"
-              value={formData.type}
+              value={form.type}
               onChange={handleChange}
-              required
-              className="w-full mt-1 px-4 py-3 rounded-xl border bg-white focus:ring-2 focus:ring-orange-400"
-            >
-              <option value="">Select Type</option>
-              <option value="Veg">Veg</option>
-              <option value="Non-Veg">Non-Veg</option>
-              <option value="Veg & Non-Veg">Veg & Non-Veg</option>
-            </select>
-          </div>
-
-          {/* Opening Time */}
-          <div>
-            <label className="font-semibold text-gray-700">Opening Time</label>
-            <input
-              type="time"
-              name="openingTime"
-              value={formData.openingTime}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-orange-400"
-            />
-          </div>
-
-          {/* Closing Time */}
-          <div>
-            <label className="font-semibold text-gray-700">Closing Time</label>
-            <input
-              type="time"
-              name="closingTime"
-              value={formData.closingTime}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-orange-400"
+              placeholder="Veg / Non-Veg"
+              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
             />
           </div>
 
           {/* Address */}
-          <div className="col-span-2">
-            <label className="font-semibold text-gray-700">Full Address</label>
+          <div>
+            <label className="text-gray-700 font-medium">Address</label>
             <textarea
               name="address"
-              value={formData.address}
+              value={form.address}
               onChange={handleChange}
-              required
               rows="3"
-              placeholder="Complete restaurant address"
-              className="w-full mt-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-orange-400"
+              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
             ></textarea>
           </div>
 
-          {/* Image */}
-          <div className="col-span-2">
-            <label className="font-semibold text-gray-700">Restaurant Image</label>
+          {/* Contact */}
+          <div>
+            <label className="text-gray-700 font-medium">Contact Number</label>
+            <input
+              type="text"
+              name="contact"
+              value={form.contact}
+              onChange={handleChange}
+              className="w-full p-3 border rounded-lg mt-1 bg-gray-50"
+            />
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="text-gray-700 font-medium flex items-center gap-2">
+              <Upload className="text-blue-600" /> Restaurant Image
+            </label>
+
             <input
               type="file"
               accept="image/*"
@@ -212,23 +169,22 @@ export default function EditRestaurant() {
               className="mt-2"
             />
 
-            {previewImg && (
+            {previewImage && (
               <img
-                src={previewImg}
-                className="w-40 h-40 mt-3 rounded-xl shadow-md border object-cover"
+                src={previewImage}
+                alt="preview"
+                className="w-40 h-32 object-cover rounded-lg mt-3 shadow"
               />
             )}
           </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
-            className="col-span-2 bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-semibold shadow-lg transition-all hover:scale-105"
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-lg font-semibold transition"
           >
-            {loading ? "Updating..." : "Update Restaurant"}
+            Update Restaurant
           </button>
-
         </form>
       </div>
     </div>
