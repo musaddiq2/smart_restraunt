@@ -1,6 +1,11 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import OrderSuccess from "./pages/OrderSuccess";
+import Cart from "./pages/Cart";
 
+
+
+import Checkout from "./pages/Checkout"; // ✅ ADDED
 // Layouts
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
@@ -38,6 +43,13 @@ export default function App() {
         <Route path="/register" element={<Register />} />
       </Route>
 
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} /> {/* ✅ ADDED */}
+                <Route
+  path="/order-success/:orderId"
+  element={<OrderSuccess />}
+/>
+
       {/* 🌐 Public Pages */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -70,6 +82,10 @@ export default function App() {
         {/* ----------------------------------------- */}
 
         <Route path="tables" element={<TableList />} />
+
+
+
+      
 
         {/* Optional — Only keep if still used */}
         <Route path="add-restaurant" element={<AddRestaurant />} />

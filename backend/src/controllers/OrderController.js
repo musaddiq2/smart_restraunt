@@ -13,29 +13,39 @@ const calcTotal = (items = []) => {
 };
 
 // POST /api/v1/orders  — place a new order (Customer)
+// POST /api/v1/orders  — place a new order (Customer)
 export const placeOrder = async (req, res) => {
   try {
-    const { tableNumber, items, customerName } = req.body;
+    const { tableNumber, items, customerName, notes } = req.body; // ✅ include notes
+
+    // Validation
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ success: false, message: "Order must include items" });
     }
 
     const totalAmount = calcTotal(items);
+
+    // Create new order with notes
     const order = new Order({
-      tableNumber,
+      tableNumber: tableNumber || "",
+      customerName: customerName || "",
       items,
       totalAmount,
-      customerName,
+      notes: notes || "", // ✅ save notes
       status: "Pending", // initial
     });
 
     await order.save();
-    // TODO: emit socket event here (if using socket.io)
+
+    // Optional: emit socket event for new order here if using socket.io
+
     res.status(201).json({ success: true, message: "Order placed", order });
   } catch (err) {
+    console.error("Error placing order:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // GET /api/v1/orders  — list all orders (Admin/Staff)
 export const getAllOrders = async (req, res) => {

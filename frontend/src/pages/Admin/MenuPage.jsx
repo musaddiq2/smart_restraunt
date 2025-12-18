@@ -1,3 +1,4 @@
+
 // src/pages/Admin/MenuPage.jsx
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -77,23 +78,18 @@ export default function MenuPage() {
     }
   }, [restaurants]);
 
-
-
   useEffect(() => {
-  // if no restaurant selected, fetch all menus
-  if (!selectedRestaurantId) {
-    dispatch(fetchMenus());           // backend: return all menus when no id
-  } else {
-    dispatch(fetchMenus(selectedRestaurantId));
-  }
+    if (!selectedRestaurantId) {
+      dispatch(fetchMenus());
+    } else {
+      dispatch(fetchMenus(selectedRestaurantId));
+    }
 
-  setMenuItem((prev) => ({
-    ...prev,
-    restaurantId: selectedRestaurantId || ""
-  }));
-}, [selectedRestaurantId, dispatch]);
-
-
+    setMenuItem((prev) => ({
+      ...prev,
+      restaurantId: selectedRestaurantId || "",
+    }));
+  }, [selectedRestaurantId, dispatch]);
 
   // Toast error
   useEffect(() => {
@@ -218,7 +214,6 @@ export default function MenuPage() {
   const filteredMenus = useMemo(() => {
     let data = Array.isArray(menus) ? [...menus] : [];
 
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       data = data.filter(
@@ -228,19 +223,16 @@ export default function MenuPage() {
       );
     }
 
-    // Type filter
     if (typeFilter !== "All") {
       data = data.filter((item) => (item.veg ? "Veg" : "Non-Veg") === typeFilter);
     }
 
-    // Availability filter
     if (statusFilter !== "All") {
       data = data.filter((item) =>
         statusFilter === "Available" ? item.isAvailable : !item.isAvailable
       );
     }
 
-    // Sort
     if (sortBy === "az") data.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     if (sortBy === "za") data.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
     if (sortBy === "newest") data.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -335,9 +327,18 @@ export default function MenuPage() {
                   <td className="px-6 py-4">{item.name}</td>
                   <td className="px-6 py-4">{item.category}</td>
                   <td className="px-6 py-4">₹{item.price}</td>
+
+                  {/* 🔥 ACTIVE / INACTIVE BUTTON (NEW UI) */}
                   <td className="px-6 py-4">
-                    <input type="checkbox" checked={item.isAvailable} onChange={() => handleToggle(item)} />
+                    <button
+                      onClick={() => handleToggle(item)}
+                      className={`px-3 py-1 rounded-full text-white text-sm 
+                        ${item.isAvailable ? "bg-green-600" : "bg-red-600"}`}
+                    >
+                      {item.isAvailable ? "Active" : "Inactive"}
+                    </button>
                   </td>
+
                   <td className="px-6 py-4">{item.veg ? "Veg" : "Non-Veg"}</td>
                   <td className="px-6 py-4 flex gap-3">
                     <button onClick={() => handleEdit(item)} className="p-2 rounded-full hover:bg-blue-50 text-blue-600">
@@ -450,15 +451,20 @@ export default function MenuPage() {
                     "Drag & Drop file here or Click to choose"
                   )}
 
-
-          
                   <input type="file" id="fileInput" name="imageFile" accept="image/*" onChange={handleChange} className="hidden" />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-4">
-                <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg border">Cancel</button>
-                <button onClick={handleSave} className="px-4 py-2 rounded-lg bg-green-600 text-white">Save</button>
+              <div className="flex justify-end gap-4 mt-6">
+                <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Save
+                </button>
               </div>
             </div>
           </motion.div>
@@ -467,6 +473,12 @@ export default function MenuPage() {
     </div>
   );
 }
+
+
+
+
+
+
 
 
 
