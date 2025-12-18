@@ -25,7 +25,6 @@ export default function EditRestaurant() {
   const [formData, setFormData] = useState({
     restaurantId: "",
     name: "",
-    contact: "",
     type: "",
     address: "",
     openingTime: "",
@@ -105,9 +104,11 @@ export default function EditRestaurant() {
 
     setLoading(true);
 
-    const data = new FormData();
-    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
-    if (image) data.append("restaurantImg", image);
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("type", form.type);
+    formData.append("address", form.address);
+    formData.append("contact", form.contact);
 
     try {
       await axios.put(`${BASE_URL}/${id}`, data, {
@@ -128,7 +129,20 @@ export default function EditRestaurant() {
       );
     }
 
-    setLoading(false);
+    try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+      await axios.put(
+        `${API_URL}/restaurant/${id}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      alert("Restaurant updated successfully!");
+      navigate("/admin/restaurant");
+    } catch (error) {
+      console.error(error);
+      alert("Error updating restaurant");
+    }
   };
 
   if (loading)
@@ -310,7 +324,7 @@ export default function EditRestaurant() {
             />
           </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}

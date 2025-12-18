@@ -53,9 +53,10 @@ export default function TableList() {
   // FETCH ALL RESTAURANTS FOR DROPDOWN
   const fetchRestaurantList = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/v1/restaurants");
+      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+      const res = await fetch(`${API_URL}/restaurant`);
       const data = await res.json();
-      setRestaurants(data);
+      setRestaurants(data.restaurants || data.data || data);
     } catch (e) {
       console.log("Restaurant list fetch failed");
     }
@@ -72,8 +73,9 @@ export default function TableList() {
     setRestaurantError("");
 
     try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
       const res = await fetch(
-        `http://localhost:5000/api/v1/restaurants/find/${id}`
+        `${API_URL}/restaurant/find/${id}`
       );
 
       if (!res.ok) {

@@ -55,13 +55,9 @@ export default function AddRestaurantModal({ onClose, onSuccess }) {
   const handleDragLeave = () => setIsDragging(false);
 
   const removeImage = () => {
-    setImage(null);
-    setPreviewImg(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const triggerFileInput = () => fileInputRef.current.click();
-
   // Handle input fields
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -13,3 +13,4 @@ exports.getRestaurants = async ({ page = 1, limit = 10, filters = {}, sort = '-c
 exports.getRestaurantById = (id) => Restaurant.findById(id);
 exports.updateRestaurant = (id, update) => Restaurant.findByIdAndUpdate(id, update, { new: true, runValidators: true });
 exports.deleteRestaurant = (id) => Restaurant.findByIdAndDelete(id);
+

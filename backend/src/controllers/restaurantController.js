@@ -83,7 +83,9 @@ export const addRestaurant = async (req, res) => {
 
     const existing = await Restaurant.findOne({ restaurantId });
     if (existing) {
-      return res.status(400).json({ message: "Restaurant ID already exists!" });
+      return res.status(400).json({
+        message: "Restaurant ID already exists!",
+      });
     }
 
     const newRestaurant = new Restaurant({

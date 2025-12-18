@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 
-
 const Section = ({ title, data }) => {
   const { addItem } = useCart(); // ✅ correct function
 
