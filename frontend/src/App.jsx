@@ -1,66 +1,63 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// Order & Cart
-import OrderSuccess from "./pages/OrderSuccess";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-
-// Layouts
+/* ===== Layouts ===== */
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
-// User Pages
+/* ===== Public Pages ===== */
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-// import MenuSections from "./pages/MenuSections";
 
-// Admin Layout & Pages
-import AdminLayout from "./pages/Admin/AdminLayout.jsx";
-import Dashboard from "./pages/Admin/Dashboard.jsx";
-import AddAdmin from "./pages/Admin/AddAdmin.jsx";
-import Categories from "./pages/Admin/Categories.jsx";
-import Orders from "./pages/Admin/Orders.jsx";
+/* ===== Cart & Orders ===== */
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
 
-// Restaurant Pages
-import Restaurant from "./pages/Admin/RestaurantManagement.jsx";
-import RestaurantView from "./pages/Admin/RestaurantView.jsx";
-import AddRestaurant from "./pages/Admin/AddRestaurant.jsx";
+/* ===== Admin Core ===== */
+import AdminLayout from "./pages/Admin/AdminLayout";
+import Dashboard from "./pages/Admin/Dashboard";
+import AddAdmin from "./pages/Admin/AddAdmin";
+import Categories from "./pages/Admin/Categories";
+import Orders from "./pages/Admin/Orders";
+import RestaurantManagement from "./pages/Admin/RestaurantManagement";
+import AddRestaurant from "./pages/Admin/AddRestaurant";
+import MenuPage from "./pages/Admin/MenuPage";
+import TableManagement from "./pages/Admin/Tables/TableManagement";
 
-// Tables
-import TableManagement from "./pages/Admin/Tables/TableManagement.jsx";
+/* ===== Advanced Admin Pages ===== */
+import AdminManagement from "./pages/Admin/AdminManagement";
+import SubscriptionManagement from "./pages/Admin/SubscriptionManagement";
+import ProjectStatus from "./pages/Admin/ProjectStatus";
+import ClientManagement from "./pages/Admin/ClientManagement";
+import SystemAnalytics from "./pages/Admin/SystemAnalytics";
+import SecurityControl from "./pages/Admin/SecurityControl";
 
-// Menu
-import MenuPage from "./pages/Admin/MenuPage.jsx";
+/* ===== Route Protection ===== */
+import ProtectedRoute from "./routes/ProtectedRoute";
 
-// Route Protection
-import ProtectedRoute from "./routes/ProtectedRoute.jsx";
-
-export default function App() {
+const App = () => {
   return (
     <Routes>
 
-      {/* ================= AUTH ROUTES ================= */}
+      {/* ========= AUTH ========= */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* ================= CART & ORDER ================= */}
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/order-success/:orderId" element={<OrderSuccess />} />
-
-      {/* ================= PUBLIC ROUTES ================= */}
+      {/* ========= PUBLIC ========= */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
-        {/* <Route path="/menu-sections" element={<MenuSections />} /> */}
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success/:orderId" element={<OrderSuccess />} />
       </Route>
 
-      {/* ================= ADMIN ROUTES ================= */}
+      {/* ========= ADMIN ========= */}
       <Route
         path="/admin"
         element={
@@ -69,32 +66,35 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        {/* Dashboard */}
+        <Route index element={<Navigate to="dashboard" replace />} />
+
+        {/* Core */}
         <Route path="dashboard" element={<Dashboard />} />
-
-        {/* Admin Management */}
-        <Route path="add-admin" element={<AddAdmin />} />
-
-        {/* Categories */}
-        <Route path="categories" element={<Categories />} />
-
-        {/* Menu */}
-        <Route path="menu" element={<MenuPage />} />
-
-        {/* Orders */}
         <Route path="orders" element={<Orders />} />
-
-        {/* Restaurant */}
-        <Route path="restaurant" element={<Restaurant />} />
-        <Route path="restaurant/edit/:id" element={<AddRestaurant />} />
-
-        {/* Tables */}
+        <Route path="menu" element={<MenuPage />} />
+        <Route path="categories" element={<Categories />} />
         <Route path="tables" element={<TableManagement />} />
 
-        {/* Optional / Legacy */}
-        <Route path="add-restaurant" element={<AddRestaurant />} />
+        {/* Restaurant */}
+        <Route path="restaurants" element={<RestaurantManagement />} />
+        <Route path="restaurants/add" element={<AddRestaurant />} />
+        <Route path="restaurants/edit/:id" element={<AddRestaurant />} />
+
+        {/* Admin / System */}
+        <Route path="add-admin" element={<AddAdmin />} />
+        <Route path="admin-management" element={<AdminManagement />} />
+        <Route path="subscriptions" element={<SubscriptionManagement />} />
+        <Route path="project-status" element={<ProjectStatus />} />
+        <Route path="clients" element={<ClientManagement />} />
+        <Route path="analytics" element={<SystemAnalytics />} />
+        <Route path="security" element={<SecurityControl />} />
       </Route>
+
+      {/* ========= FALLBACK ========= */}
+      <Route path="*" element={<Navigate to="/" replace />} />
 
     </Routes>
   );
-}
+};
+
+export default App;
