@@ -18,35 +18,49 @@ import { motion } from "framer-motion";
 export default function Sidebar() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("Admin");
+  const [userRole, setUserRole] = useState("admin");
 
   useEffect(() => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       if (user) {
         setUserName(user.name || user.email?.split("@")[0] || "Admin");
+        setUserRole(user.role || "admin");
       }
     } catch {
       setUserName("Admin");
     }
   }, []);
 
-  const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+  // Base menu items for all admins
+  const baseMenuItems = [
     { name: "Orders", icon: ShoppingBag, path: "/admin/orders" },
     { name: "Menu", icon: Utensils, path: "/admin/menu" },
     { name: "Categories", icon: MdCategory, path: "/admin/categories" },
-    { name: "Restaurants", icon: Building2, path: "/admin/restaurants" },
     { name: "Tables & QR", icon: QrCode, path: "/admin/tables" },
+  ];
 
+  // Super Admin specific menu items
+  const superAdminMenuItems = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { name: "Restaurants", icon: Building2, path: "/admin/restaurants" },
     { name: "Admin Management", icon: UserPlus, path: "/admin/admin-management" },
     { name: "Subscription Management", icon: BarChart2, path: "/admin/subscriptions" },
     { name: "Project Status", icon: BarChart2, path: "/admin/project-status" },
     { name: "Client Management", icon: User, path: "/admin/clients" },
     { name: "System Analytics", icon: BarChart2, path: "/admin/analytics" },
     { name: "Security & Control", icon: Shield, path: "/admin/security" },
-
-    { name: "Logout", icon: LogOut, action: "logout" },
   ];
+
+  // Regular Admin specific menu items
+  const adminMenuItems = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/admin-dashboard" },
+  ];
+
+  // Combine menu items based on role
+  const menuItems = userRole === "superadmin" 
+    ? [...superAdminMenuItems, ...baseMenuItems, { name: "Logout", icon: LogOut, action: "logout" }]
+    : [...adminMenuItems, ...baseMenuItems, { name: "Logout", icon: LogOut, action: "logout" }];
 
   const handleLogout = () => {
     localStorage.clear();
@@ -59,13 +73,17 @@ export default function Sidebar() {
       {/* HEADER */}
       <div className="p-6 border-b text-center">
         <h1 className="text-2xl font-extrabold">
-          <span className="text-rose-600">Admin</span> Panel
+          <span className="text-rose-600">
+            {userRole === "superadmin" ? "Super Admin" : "Admin"}
+          </span> Panel
         </h1>
 
         <div className="mt-4 flex flex-col items-center">
           <User className="text-rose-500 mb-1" size={22} />
           <p className="text-sm font-semibold truncate w-full">{userName}</p>
-          <p className="text-xs text-gray-400">Administrator</p>
+          <p className="text-xs text-gray-400 capitalize">
+            {userRole === "superadmin" ? "Super Administrator" : "Administrator"}
+          </p>
         </div>
       </div>
 

@@ -7,15 +7,18 @@ import {
   updateMenuItem,
   deleteMenuItem,
 } from "../controllers/menuController.js";
+import { protect, isAdmin } from "../middlewares/authMiddleware.js";
+import { checkPermission } from "../middlewares/checkRestaurantAccess.js";
 
 const router = express.Router();
 
+// Public routes - anyone can view menus
 router.get("/", getAllMenuItems);
 router.get("/:menuId", getMenuItemById);
 
-// Use Multer for file upload in POST and PUT
-router.post("/", upload.single("image"), addMenuItem);
-router.put("/:menuId", upload.single("image"), updateMenuItem);
-router.delete("/:menuId", deleteMenuItem);
+// Protected routes - require admin access and menu management permission
+router.post("/", protect, isAdmin, checkPermission("canManageMenus"), upload.single("image"), addMenuItem);
+router.put("/:menuId", protect, isAdmin, checkPermission("canManageMenus"), upload.single("image"), updateMenuItem);
+router.delete("/:menuId", protect, isAdmin, checkPermission("canManageMenus"), deleteMenuItem);
 
 export default router;

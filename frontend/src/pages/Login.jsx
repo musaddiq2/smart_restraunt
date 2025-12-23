@@ -52,8 +52,10 @@ export default function Login() {
 
       // 🕒 Redirect after 2s based on role
       setTimeout(() => {
-        if (data.user.role === "admin") {
+        if (data.user.role === "superadmin") {
           navigate("/admin/dashboard");
+        } else if (data.user.role === "admin") {
+          navigate("/admin/admin-dashboard");
         } else {
           navigate("/");
         }

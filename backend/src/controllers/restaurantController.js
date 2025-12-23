@@ -65,10 +65,16 @@ export const getRestaurantById = async (req, res) => {
 };
 
 /* ===========================================================
-   ⭐ ADD RESTAURANT
+   ⭐ ADD RESTAURANT (Super Admin Only)
 =========================================================== */
 export const addRestaurant = async (req, res) => {
   try {
+    // Only superadmin can create restaurants
+    if (req.user && req.user.role !== "superadmin") {
+      return res.status(403).json({
+        message: "Only Super Admin can create restaurants",
+      });
+    }
     const {
       restaurantId,
       name,
@@ -116,10 +122,17 @@ export const addRestaurant = async (req, res) => {
 };
 
 /* ===========================================================
-   ⭐ EDIT RESTAURANT
+   ⭐ EDIT RESTAURANT (Super Admin Only)
 =========================================================== */
 export const editRestaurant = async (req, res) => {
   try {
+    // Only superadmin can edit restaurants
+    if (req.user && req.user.role !== "superadmin") {
+      return res.status(403).json({
+        message: "Only Super Admin can edit restaurants",
+      });
+    }
+
     const { id } = req.params;
     const restaurant = await Restaurant.findById(id);
 
@@ -169,10 +182,17 @@ export const editRestaurant = async (req, res) => {
 };
 
 /* ===========================================================
-   ⭐ DELETE RESTAURANT
+   ⭐ DELETE RESTAURANT (Super Admin Only)
 =========================================================== */
 export const deleteRestaurant = async (req, res) => {
   try {
+    // Only superadmin can delete restaurants
+    if (req.user && req.user.role !== "superadmin") {
+      return res.status(403).json({
+        message: "Only Super Admin can delete restaurants",
+      });
+    }
+
     const { id } = req.params;
     const restaurant = await Restaurant.findById(id);
 

@@ -9,23 +9,19 @@ import Cart from "../pages/Cart";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 
-// ADMIN PAGES
-import Dashboard from "../pages/Admin/Dashboard";
-import Categories from "../pages/Admin/Categories";
+// SUPER ADMIN PAGES
+import Dashboard from "../pages/Admin/SuperAdmin/Dashboard";
+import RestaurantManagement from "../pages/Admin/SuperAdmin/RestaurantManagement";
+import AddRestaurant from "../pages/Admin/SuperAdmin/AddRestaurant";
+import EditRestaurant from "../pages/Admin/SuperAdmin/EditRestaurant";
+import AddAdmin from "../pages/Admin/SuperAdmin/AddAdmin";
 
-// RESTAURANT MODULE
-import RestaurantManagement from "../pages/Admin/RestaurantManagement";
-import AddRestaurant from "../pages/Admin/AddRestaurant";
-import EditRestaurant from "../pages/Admin/EditRestaurant";
-
-// ADMIN MANAGEMENT
-import AddAdmin from "../pages/Admin/AddAdmin";
-
-// TABLE MODULE
-import AddTable from "../pages/Admin/Tables/AddTable";
-import TableManagement from "../pages/Admin/Tables/TableManagement";
-import EditTable from "../pages/Admin/Tables/EditTable";
-import TableQR from "../pages/Admin/Tables/TableQR";
+// SHARED PAGES
+import Categories from "../pages/Admin/Shared/Categories";
+import AddTable from "../pages/Admin/Shared/Tables/AddTable";
+import TableManagement from "../pages/Admin/Shared/Tables/TableManagement";
+import EditTable from "../pages/Admin/Shared/Tables/EditTable";
+import TableQR from "../pages/Admin/Shared/Tables/TableQR";
 
 // LAYOUTS & ROUTE GUARDS
 import AdminLayout from "../layouts/AdminLayout";

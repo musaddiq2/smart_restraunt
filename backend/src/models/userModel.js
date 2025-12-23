@@ -21,8 +21,32 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "staff", "user"],
+      enum: ["superadmin", "admin", "staff", "user"],
       default: "user"
+    },
+    status: {
+      type: String,
+      enum: ["Active", "Blocked"],
+      default: "Active"
+    },
+    // Permissions for admin users (only used when role is "admin")
+    permissions: {
+      canManageMenus: {
+        type: Boolean,
+        default: true
+      },
+      canManageOrders: {
+        type: Boolean,
+        default: true
+      },
+      canManageTables: {
+        type: Boolean,
+        default: true
+      },
+      canAccessDashboard: {
+        type: Boolean,
+        default: true
+      }
     },
   },
   { timestamps: true }

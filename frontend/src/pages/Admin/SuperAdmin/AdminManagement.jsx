@@ -35,6 +35,14 @@ export default function AdminManagement() {
       const token = localStorage.getItem("token");
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
       
+      if (!token) {
+        console.error("No token found in localStorage");
+        alert("Please login again. No authentication token found.");
+        return;
+      }
+
+      console.log("Fetching admins from:", `${API_BASE_URL}/admin`);
+      
       const response = await fetch(`${API_BASE_URL}/admin`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -42,22 +50,25 @@ export default function AdminManagement() {
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch admins");
-      }
-
       const data = await response.json();
+      console.log("Admin fetch response:", { status: response.status, data });
+
+      if (!response.ok) {
+        throw new Error(data.message || `Failed to fetch admins: ${response.status} ${response.statusText}`);
+      }
       
       if (data.success && data.admins) {
+        console.log("Admins fetched successfully:", data.admins.length);
         setAdmins(data.admins);
         setFilteredAdmins(data.admins);
       } else {
+        console.warn("Unexpected response format:", data);
         setAdmins([]);
         setFilteredAdmins([]);
       }
     } catch (error) {
       console.error("Error fetching admins:", error);
-      alert("Failed to load admins. Please try again.");
+      alert(`Failed to load admins: ${error.message}. Please check console for details.`);
       setAdmins([]);
       setFilteredAdmins([]);
     } finally {
@@ -396,13 +407,23 @@ export default function AdminManagement() {
               </p>
             </div>
 
-            <button
-              onClick={() => setOpenAdd(true)}
-              className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 self-start md:self-auto"
-            >
-              <Plus size={20} />
-              Add Admin
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={fetchAdmins}
+                className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold shadow-md hover:shadow-lg hover:bg-gray-200 transition-all duration-300 flex items-center gap-2"
+                title="Refresh admin list"
+              >
+                <RefreshCcw size={18} />
+                Refresh
+              </button>
+              <button
+                onClick={() => setOpenAdd(true)}
+                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 self-start md:self-auto"
+              >
+                <Plus size={20} />
+                Add Admin
+              </button>
+            </div>
           </div>
         </div>
 
@@ -463,13 +484,28 @@ export default function AdminManagement() {
         </div>
 
         {/* Admin Cards Grid */}
-        {filteredAdmins.length === 0 ? (
+        {filteredAdmins.length === 0 && !loading ? (
           <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-2xl">
             <Shield size={64} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No admins found</h3>
-            <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              {admins.length === 0 ? "No admins found" : "No admins match your search"}
+            </h3>
+            <p className="text-gray-500 mb-4">
+              {admins.length === 0 
+                ? "Get started by adding your first admin user" 
+                : "Try adjusting your search or filter criteria"}
+            </p>
+            {admins.length === 0 && (
+              <button
+                onClick={() => setOpenAdd(true)}
+                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
+              >
+                <Plus size={20} />
+                Add Your First Admin
+              </button>
+            )}
           </div>
-        ) : (
+        ) : filteredAdmins.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
             {filteredAdmins.map((admin, index) => (
               <AdminCard
@@ -485,7 +521,7 @@ export default function AdminManagement() {
               />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Add Admin Modal */}

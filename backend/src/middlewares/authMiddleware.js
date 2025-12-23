@@ -30,12 +30,24 @@ export const authorizeRoles = (...roles) => {
   };
 };
 
-// ✅ Shortcut for admin routes
-export const isAdmin = authorizeRoles("admin");
+// ✅ Shortcut for admin routes (both superadmin and admin)
+export const isAdmin = authorizeRoles("superadmin", "admin");
+
+// ✅ Only Super Admin can access
+export const isSuperAdmin = authorizeRoles("superadmin");
+
+// ✅ Only regular Admin (not superadmin)
+export const isRegularAdmin = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ success: false, message: "Admin access required" });
+  }
+};
 
 export const adminAuth = (req, res, next) => {
   // Example: check user role
-  if (req.user && req.user.role === "admin") {
+  if (req.user && (req.user.role === "admin" || req.user.role === "superadmin")) {
     next();
   } else {
     res.status(403).json({ success: false, message: "Admin access required" });

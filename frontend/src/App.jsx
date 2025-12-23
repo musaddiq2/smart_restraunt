@@ -16,24 +16,29 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 
-/* ===== Admin Core ===== */
+/* ===== Layouts ===== */
 import AdminLayout from "./pages/Admin/AdminLayout";
-import Dashboard from "./pages/Admin/Dashboard";
-import AddAdmin from "./pages/Admin/AddAdmin";
-import Categories from "./pages/Admin/Categories";
-import Orders from "./pages/Admin/Orders";
-import RestaurantManagement from "./pages/Admin/RestaurantManagement";
-import AddRestaurant from "./pages/Admin/AddRestaurant";
-import MenuPage from "./pages/Admin/MenuPage";
-import TableManagement from "./pages/Admin/Tables/TableManagement";
 
-/* ===== Advanced Admin Pages ===== */
-import AdminManagement from "./pages/Admin/AdminManagement";
-import SubscriptionManagement from "./pages/Admin/SubscriptionManagement";
-import ProjectStatus from "./pages/Admin/ProjectStatus";
-import ClientManagement from "./pages/Admin/ClientManagement";
-import SystemAnalytics from "./pages/Admin/SystemAnalytics";
-import SecurityControl from "./pages/Admin/SecurityControl";
+/* ===== Super Admin Pages ===== */
+import Dashboard from "./pages/Admin/SuperAdmin/Dashboard";
+import RestaurantManagement from "./pages/Admin/SuperAdmin/RestaurantManagement";
+import AddRestaurant from "./pages/Admin/SuperAdmin/AddRestaurant";
+import AdminManagement from "./pages/Admin/SuperAdmin/AdminManagement";
+import AddAdmin from "./pages/Admin/SuperAdmin/AddAdmin";
+import SubscriptionManagement from "./pages/Admin/SuperAdmin/SubscriptionManagement";
+import ProjectStatus from "./pages/Admin/SuperAdmin/ProjectStatus";
+import ClientManagement from "./pages/Admin/SuperAdmin/ClientManagement";
+import SystemAnalytics from "./pages/Admin/SuperAdmin/SystemAnalytics";
+import SecurityControl from "./pages/Admin/SuperAdmin/SecurityControl";
+
+/* ===== Admin Pages ===== */
+import AdminDashboard from "./pages/Admin/Admin/AdminDashboard";
+
+/* ===== Shared Pages (Both Super Admin & Admin) ===== */
+import Orders from "./pages/Admin/Shared/Orders";
+import MenuPage from "./pages/Admin/Shared/MenuPage";
+import Categories from "./pages/Admin/Shared/Categories";
+import TableManagement from "./pages/Admin/Shared/Tables/TableManagement";
 
 /* ===== Route Protection ===== */
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -57,37 +62,136 @@ const App = () => {
         <Route path="/order-success/:orderId" element={<OrderSuccess />} />
       </Route>
 
-      {/* ========= ADMIN ========= */}
+      {/* ========= ADMIN (Super Admin & Admin) ========= */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute requiredRole="admin">
+          <ProtectedRoute allowedRoles={["superadmin", "admin"]}>
             <AdminLayout />
           </ProtectedRoute>
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
 
-        {/* Core */}
-        <Route path="dashboard" element={<Dashboard />} />
+        {/* Super Admin Dashboard (Restaurant Management) */}
+        <Route 
+          path="dashboard" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Regular Admin Dashboard */}
+        <Route 
+          path="admin-dashboard" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Shared Routes */}
         <Route path="orders" element={<Orders />} />
         <Route path="menu" element={<MenuPage />} />
         <Route path="categories" element={<Categories />} />
         <Route path="tables" element={<TableManagement />} />
 
-        {/* Restaurant */}
-        <Route path="restaurants" element={<RestaurantManagement />} />
-        <Route path="restaurants/add" element={<AddRestaurant />} />
-        <Route path="restaurants/edit/:id" element={<AddRestaurant />} />
+        {/* Restaurant Management (Super Admin Only) */}
+        <Route 
+          path="restaurants" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <RestaurantManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="restaurants/add" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <AddRestaurant />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="restaurants/edit/:id" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <AddRestaurant />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* View Restaurant (Super Admin Only) */}
+        <Route 
+          path="restaurants/view/:id" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <RestaurantManagement />
+            </ProtectedRoute>
+          } 
+        />
 
-        {/* Admin / System */}
-        <Route path="add-admin" element={<AddAdmin />} />
-        <Route path="admin-management" element={<AdminManagement />} />
-        <Route path="subscriptions" element={<SubscriptionManagement />} />
-        <Route path="project-status" element={<ProjectStatus />} />
-        <Route path="clients" element={<ClientManagement />} />
-        <Route path="analytics" element={<SystemAnalytics />} />
-        <Route path="security" element={<SecurityControl />} />
+        {/* Admin Management (Super Admin Only) */}
+        <Route 
+          path="add-admin" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <AddAdmin />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="admin-management" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <AdminManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="subscriptions" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <SubscriptionManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="project-status" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <ProjectStatus />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="clients" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <ClientManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="analytics" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <SystemAnalytics />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="security" 
+          element={
+            <ProtectedRoute requiredRole="superadmin">
+              <SecurityControl />
+            </ProtectedRoute>
+          } 
+        />
       </Route>
 
       {/* ========= FALLBACK ========= */}
