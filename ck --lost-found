@@ -1,0 +1,31 @@
+[33mf4b2510[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mrecover-local[m[33m, [m[1;31morigin/recover-local[m[33m)[m HEAD@{0}: checkout: moving from dev to recover-local
+[33m6be635a[m[33m ([m[1;31morigin/dev[m[33m, [m[1;32mdev[m[33m)[m HEAD@{1}: pull --tags origin dev: Fast-forward
+[33mf4b2510[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mrecover-local[m[33m, [m[1;31morigin/recover-local[m[33m)[m HEAD@{2}: reset: moving to HEAD
+[33mf4b2510[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mrecover-local[m[33m, [m[1;31morigin/recover-local[m[33m)[m HEAD@{3}: commit (merge): Implement cart flow: add to cart, navbar cart sync, and order processing
+[33m8369b98[m HEAD@{4}: commit: on add to cart it saves temporary,on navbar on cart we can proceed to complete the order and cancel properly
+[33m1ccdfd8[m HEAD@{5}: commit: Menu page of admin Dashboard completed with the new changes
+[33me9fdb4a[m HEAD@{6}: commit: changed menu page ui and images saved to cloudinary
+[33m4f04b9a[m HEAD@{7}: commit: updated ui of menupages.jsx with saving image in cloudinary
+[33m860af50[m HEAD@{8}: reset: moving to HEAD
+[33m860af50[m HEAD@{9}: commit (merge): Merge branch 'dev' of https://github.com/musaddiq2/smart_restraunt into dev
+[33m6b808c5[m HEAD@{10}: commit: the is menupage
+[33mcd2dfab[m HEAD@{11}: commit: get specific selected restaurants menu on selected restaurant in dropdown , search option to find menu items
+[33m88c5811[m HEAD@{12}: commit (merge): Merge branch 'dev' of https://github.com/musaddiq2/smart_restraunt into dev
+[33mc6802d9[m HEAD@{13}: reset: moving to ORIG_HEAD
+[33mace813e[m HEAD@{14}: commit (merge): Merge branch 'dev' of https://github.com/musaddiq2/smart_restraunt into dev
+[33mc6802d9[m HEAD@{15}: commit: made menu ui page of admin dashboard,remain some corrections
+[33m41e523e[m HEAD@{16}: commit: Created Menu UI in admin dashboard
+[33me65442a[m HEAD@{17}: pull origin dev: Fast-forward
+[33m194d97d[m HEAD@{18}: commit: Added Categories UI, connected Redux, and implemented Add/Edit/Delete functionality
+[33mba67f24[m HEAD@{19}: commit: Implemented full redux setup in frontend and integrated in categories.jsx with working popup modal ADD modal
+[33mc1bb7b7[m HEAD@{20}: pull origin dev: Fast-forward
+[33m8282d35[m HEAD@{21}: pull origin dev: Fast-forward
+[33meaf1c10[m HEAD@{22}: pull origin dev: Fast-forward
+[33m4d8b9e1[m HEAD@{23}: checkout: moving from dev to dev
+[33m4d8b9e1[m HEAD@{24}: commit: Added validation files and updated order/category APIs
+[33mb3fa2b2[m HEAD@{25}: commit (merge): Merge branch 'dev' of https://github.com/musaddiq2/smart_restraunt into dev
+[33m465326d[m HEAD@{26}: commit: WIP: saving my current changes before pull
+[33mfee5060[m HEAD@{27}: checkout: moving from dev to dev
+[33mfee5060[m HEAD@{28}: commit (merge): Merge branch 'dev' of https://github.com/musaddiq2/smart_restraunt into dev
+[33m6279c9a[m HEAD@{29}: commit: completed Category API
+[33m1216a5e[m HEAD@{30}: clone: from https://github.com/musaddiq2/smart_restraunt.git

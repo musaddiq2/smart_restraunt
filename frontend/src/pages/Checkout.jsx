@@ -164,7 +164,7 @@ export default function Checkout() {
         />
       </div>
 
-      {/* ---------------- Place Order Button ---------------- */}
+      {/* ---------------- Place Order Button --------------bfgg-- */}
       <button
         onClick={placeOrder}
         disabled={loading}
