@@ -33,14 +33,17 @@ export default function Register() {
       return alert("Passwords do not match!");
 
     try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
-      const { data } = await axios.post(
-        `${API_URL}/auth/register`,
-        formData
-      );
-      alert(`🎉 Welcome ${data.user.name}!`);
-      navigate("/login");
-    } catch (error) {
+  const API_BASE = import.meta.env.VITE_API_URL;
+
+  const { data } = await axios.post(
+    `${API_BASE}/auth/register`,
+    formData
+  );
+
+  alert(`🎉 Welcome ${data.user.name}!`);
+  navigate("/login");
+
+} catch (error) {
       alert(error.response?.data?.message || "Registration failed");
     }
   };

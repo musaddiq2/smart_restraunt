@@ -15,14 +15,7 @@ import { toast, ToastContainer } from "react-toastify";
 export default function EditRestaurant() {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const API_BASE =
-    import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:5000/api/v1";
-  const BASE_URL = `${API_BASE.replace(/\/$/, "")}/restaurant`;
-
-  const [formData, setFormData] = useState({
+   const [formData, setFormData] = useState({
     restaurantId: "",
     name: "",
     type: "",
@@ -130,12 +123,18 @@ export default function EditRestaurant() {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
-      await axios.put(
-        `${API_URL}/restaurant/${id}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  await axios.put(
+    `${API_URL}/restaurant/${id}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
 
       alert("Restaurant updated successfully!");
       navigate("/admin/restaurant");

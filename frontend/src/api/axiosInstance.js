@@ -1,24 +1,27 @@
 // central axios instance used by slices
 import axios from "axios";
 
-const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const axiosInstance = axios.create({
-  baseURL: BASE,
+  baseURL: API_BASE, // ✅ FIX HERE
   timeout: 15000,
 });
 
 // Optional: interceptors for logging / auth
-axiosInstance.interceptors.request.use((cfg) => {
-  // console.log("API request:", cfg.method, cfg.url);
-  return cfg;
+axiosInstance.interceptors.request.use((config) => {
+  // Example: attach token
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 axiosInstance.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    // normalize error shape
-    return Promise.reject(err);
+  (response) => response,
+  (error) => {
+    return Promise.reject(error);
   }
 );
 

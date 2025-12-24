@@ -1,123 +1,221 @@
-
-
-// By arib shaikh
+// By Arib Shaikh
+// src/controllers/OrderController.js
 
 import Order from "../models/OrderModel.js";
+import { orderValidationSchema } from "../validations/orderValidation.js";
 
-/**
- * Helper to compute total amount from items
- * items: [{ itemName, quantity, price }]
- */
+/* ======================================================
+   HELPER: CALCULATE TOTAL AMOUNT
+   items: [{ itemName, quantity, price }]
+====================================================== */
 const calcTotal = (items = []) => {
-  return items.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 1), 0);
+  return items.reduce(
+    (sum, item) =>
+      sum + Number(item.price || 0) * Number(item.quantity || 1),
+    0
+  );
 };
 
-// POST /api/v1/orders  — place a new order (Customer)
-// POST /api/v1/orders  — place a new order (Customer)
+/* ======================================================
+   CREATE / PLACE ORDER (Customer)
+   POST /api/v1/orders
+====================================================== */
 export const placeOrder = async (req, res) => {
   try {
-    const { tableNumber, items, customerName, notes } = req.body; // ✅ include notes
+    // Joi validation
+    const { error, value } = orderValidationSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
-    // Validation
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ success: false, message: "Order must include items" });
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.details.map((e) => e.message),
+      });
     }
+
+    const {
+      tableNumber,
+      items,
+      customerName,
+      customerMobile,
+      orderType,
+      notes,
+      paymentMethod,
+    } = value;
 
     const totalAmount = calcTotal(items);
 
-    // Create new order with notes
-    const order = new Order({
+    if (totalAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Total amount must be greater than zero",
+      });
+    }
+
+    const order = await Order.create({
       tableNumber: tableNumber || "",
       customerName: customerName || "",
+      customerMobile: customerMobile || "",
+      orderType: orderType || "DineIn",
       items,
       totalAmount,
-      notes: notes || "", // ✅ save notes
-      status: "Pending", // initial
+      notes: notes || "",
+      status: "Pending",
+      paymentMethod: paymentMethod || "Cash",
+      paymentStatus: "Unpaid",
     });
 
-    await order.save();
-
-    // Optional: emit socket event for new order here if using socket.io
-
-    res.status(201).json({ success: true, message: "Order placed", order });
-  } catch (err) {
-    console.error("Error placing order:", err);
-    res.status(500).json({ success: false, message: err.message });
+    return res.status(201).json({
+      success: true,
+      message: "Order placed successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("🔥 Error placing order:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
-
-// GET /api/v1/orders  — list all orders (Admin/Staff)
+/* ======================================================
+   GET ALL ORDERS (Admin / Staff)
+   GET /api/v1/orders
+====================================================== */
 export const getAllOrders = async (req, res) => {
   try {
-    // Optional: add query filters like ?status=Pending
-    const q = {};
-    if (req.query.status) q.status = req.query.status;
-    const orders = await Order.find(q).sort({ createdAt: -1 });
-    res.json({ success: true, orders });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    const filter = {};
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// GET /api/v1/orders/:orderId — single order (Admin/Staff)
+/* ======================================================
+   GET SINGLE ORDER
+   GET /api/v1/orders/:id
+====================================================== */
 export const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
-    res.json({ success: true, order });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// 🟠 Update Order Status
+/* ======================================================
+   UPDATE ORDER STATUS (Kitchen / Admin)
+   PATCH /api/v1/orders/:id/status
+====================================================== */
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ["Pending", "Preparing", "Completed"];
+
+    const validStatuses = [
+      "Pending",
+      "Preparing",
+      "Completed",
+      "Cancelled",
+    ];
 
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: `Invalid status. Allowed: ${validStatuses.join(", ")}`
+        message: `Invalid status. Allowed: ${validStatuses.join(", ")}`,
       });
     }
 
-    const order = await Order.findByIdAndUpdate(
-      req.params.orderId,
-      { status },
-      { new: true }
-    );
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
 
-    if (!order)
-      return res.status(404).json({ success: false, message: "Order not found" });
+    order.status = status;
+    await order.save();
 
     res.status(200).json({
       success: true,
       message: "Order status updated successfully",
-      order
+      order,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// DELETE /api/v1/orders/:orderId  — cancel order (Admin allowed; optionally allow customer if not prepared)
+/* ======================================================
+   CANCEL ORDER (Customer)
+   DELETE /api/v1/orders/:id
+====================================================== */
 export const cancelOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    const order = await Order.findById(req.params.id);
 
-    // Optional rule: disallow cancel if status is Completed
-    if (order.status === "Completed") {
-      return res.status(400).json({ success: false, message: "Cannot cancel a completed order" });
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
     }
 
-    await Order.findByIdAndDelete(req.params.orderId);
-    // TODO: emit socket event for cancellation
-    res.json({ success: true, message: "Order cancelled" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    // Cannot cancel completed orders
+    if (order.status === "Completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Completed order cannot be cancelled",
+      });
+    }
+
+    order.status = "Cancelled";
+    order.cancelReason = req.body.reason || "Cancelled by user";
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully",
+      order,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

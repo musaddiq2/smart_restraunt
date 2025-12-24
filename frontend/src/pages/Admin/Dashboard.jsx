@@ -35,41 +35,33 @@ export default function RestaurantDashboard() {
 
   const API_BASE_URL = "http://localhost:5000/api/v1";
 
-  const fetchRestaurants = async (showRefreshAnimation = false) => {
-    try {
-      if (showRefreshAnimation) setRefreshing(true);
-      setError(null);
+ 
 
-      const response = await fetch(`${API_BASE_URL}/restaurant`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      const data = result.restaurants || [];
+  const fetchRestaurants = async () => {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_URL}/restaurant`
+    );
 
-      setRestaurants(data);
-      setFilteredRestaurants(data);
+    const data = res.data.restaurants || [];
 
-      // Calculate stats dynamically
-      setStats({
-        restaurants: data.length,
-        partners: data.filter((x) => x.type === "Partner").length,
-        chefs: data.reduce((sum, r) => sum + (r.chefCount || 0), 0) || 18,
-        tables: data.reduce((sum, r) => sum + (r.tableCount || 0), 0) || 40,
-        pendingOrders: data.reduce((sum, r) => sum + (r.pendingOrders || 0), 0) || 12,
-      });
-    } catch (error) {
-      console.error("Error loading restaurants:", error);
-      setError(error.message || "Failed to load restaurants");
-    } finally {
-      setLoading(false);
-      if (showRefreshAnimation) {
-        setTimeout(() => setRefreshing(false), 500);
-      }
-    }
-  };
+    setRestaurants(data);
+
+    // dynamically calculate stats
+    setStats({
+      restaurants: data.length,
+      partners: data.filter((x) => x.type === "Partner").length,
+      chefs: 18, // can be fetched dynamically later
+      tables: 40,
+      pendingOrders: 12,
+    });
+  } catch (error) {
+    console.error("Error loading restaurants:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchRestaurants();
@@ -99,22 +91,18 @@ export default function RestaurantDashboard() {
   const deleteRestaurant = async (id) => {
     if (!window.confirm("Are you sure you want to delete this restaurant?"))
       return;
-
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/restaurant/${id}`, {
-        method: "DELETE",
-      });
+  await axios.delete(
+    `${import.meta.env.VITE_API_URL}/restaurant/${id}`
+  );
 
-      if (!response.ok) {
-        throw new Error("Failed to delete restaurant");
-      }
+  fetchRestaurants();
+} catch (error) {
+  console.error("Delete error:", error);
+  alert("Error deleting restaurant!");
+}
 
-      // Refresh the list after deletion
-      await fetchRestaurants(true);
-    } catch (error) {
-      console.error("Delete error:", error);
-      alert("Error deleting restaurant!");
-    }
   };
 
   const handleEdit = (id) => {

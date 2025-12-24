@@ -1,4 +1,6 @@
 // By Areeb Shaikh
+// src/routes/OrderRoutes.js
+
 import express from "express";
 import {
   placeOrder,
@@ -13,19 +15,22 @@ import { orderValidationSchema } from "../validations/orderValidation.js";
 
 const router = express.Router();
 
-// 🟢 Place new order (Validation required)
-router.post("/", validateRequest(orderValidationSchema), placeOrder);
+router.post(
+  "/",
+  validateRequest(orderValidationSchema),
+  placeOrder
+);
 
-// 🟡 Get all orders (Admin/Staff)
+
 router.get("/", getAllOrders);
 
-// 🔵 Get single order (Admin/Staff)
-router.get("/:orderId", getOrderById);
 
-// 🟠 Update order status (Admin/Customer/Staff)
-router.patch("/:orderId/status", updateOrderStatus);
+router.get("/:id", getOrderById);
 
-// 🔴 Cancel order
-router.delete("/:orderId", cancelOrder);
+
+router.patch("/:id/status", updateOrderStatus);
+
+
+router.delete("/:id", cancelOrder);
 
 export default router;

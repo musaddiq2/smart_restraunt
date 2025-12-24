@@ -1,6 +1,7 @@
 
+
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FaUser,
   FaShoppingCart,
@@ -18,35 +19,32 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [cartModalOpen, setCartModalOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
-  const { cart } = useCart(); // ✅ ONLY THIS
+  const { cart } = useCart();
+  const cartRef = useRef(null);
 
-  // ✅ Calculate cart count safely
-  const cartCount = cart.items.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+  // Calculate cart count
+  const cartCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // ✅ Sticky Navbar
+  // Sticky Navbar
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ✅ Load user
+  // Load user
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (token && storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  // ✅ Logout
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -54,6 +52,19 @@ export default function Navbar() {
     setUserMenuOpen(false);
     navigate("/login");
   };
+
+  // Close cart modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cartRef.current && !cartRef.current.contains(event.target)) {
+        setCartModalOpen(false);
+      }
+    };
+    if (cartModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [cartModalOpen]);
 
   const dropdownItems = [
     { label: "Veg", href: "#veg" },
@@ -76,7 +87,7 @@ export default function Navbar() {
           : "text-white"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between relative">
         {/* Logo */}
         <div
           className="flex items-center gap-3 cursor-pointer"
@@ -118,7 +129,7 @@ export default function Navbar() {
                     <a
                       key={i}
                       href={item.href}
-                      className="block px-4 py-2 hover:bg-yellow-400"
+                      className="block px-4 py-2 hover:bg-yellow-400 transition"
                     >
                       {item.label}
                     </a>
@@ -128,26 +139,97 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          <a href="#about">About</a>
-          <a href="#chef">Chef</a>
-          <a href="#contact">Contact</a>
+          <a href="#about" className="hover:text-yellow-400 transition">About</a>
+          <a href="#chef" className="hover:text-yellow-400 transition">Chef</a>
+          <a href="#contact" className="hover:text-yellow-400 transition">Contact</a>
         </nav>
 
-        {/* Right */}
-        <div className="flex items-center gap-4">
+        {/* Right section */}
+        <div className="flex items-center gap-4 relative">
           {/* Cart Icon */}
           <button
-            onClick={() => navigate("/cart")}
-            className="relative p-2"
+            onClick={() => setCartModalOpen(!cartModalOpen)}
+            className="relative p-2 hover:text-yellow-400 transition"
           >
             <FaShoppingCart className="text-xl" />
-
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                 {cartCount}
               </span>
             )}
           </button>
+
+        {/* Cart Modal with backdrop */}
+<AnimatePresence>
+  {cartModalOpen && (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 bg-black z-40"
+        onClick={() => setCartModalOpen(false)}
+      />
+
+      {/* Modal */}
+      <motion.div
+        ref={cartRef}
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -30 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="fixed right-4 top-20 w-80 md:w-96 bg-white text-black rounded-xl shadow-2xl z-50 overflow-hidden"
+      >
+        {cart.items.length > 0 ? (
+          <div className="p-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
+            {cart.items.map((item) => (
+              <motion.div
+                key={item.itemId}
+                whileHover={{
+                  scale: 1.02,
+                  backgroundColor: "rgba(255,235,59,0.1)",
+                }}
+                className="flex items-center justify-between gap-3 border-b pb-2 rounded-md transition-colors"
+              >
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-12 h-12 object-cover rounded"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold">{item.name}</p>
+                  <p className="text-yellow-500 font-bold">
+                    ₹{item.price} x {item.quantity}
+                  </p>
+                </div>
+                <p className="text-gray-400">
+                  ₹{(item.price * item.quantity).toFixed(0)}
+                </p>
+              </motion.div>
+            ))}
+
+            <button
+              onClick={() => {
+                navigate("/cart");
+                setCartModalOpen(false);
+              }}
+              className="mt-3 w-full bg-yellow-500 text-black py-2 rounded-lg font-semibold hover:bg-yellow-400 transition"
+            >
+              View Details
+            </button>
+          </div>
+        ) : (
+          <div className="p-4 text-center text-gray-500">
+            Your cart is empty
+          </div>
+        )}
+      </motion.div>
+    </>
+  )}
+</AnimatePresence>
+
 
           {/* User */}
           {user ? (
@@ -171,7 +253,7 @@ export default function Navbar() {
                   >
                     <button
                       onClick={handleLogout}
-                      className="px-4 py-2 flex items-center gap-2 hover:bg-red-100"
+                      className="px-4 py-2 flex items-center gap-2 hover:bg-red-100 transition"
                     >
                       <FaSignOutAlt /> Logout
                     </button>
@@ -186,10 +268,7 @@ export default function Navbar() {
           )}
 
           {/* Mobile Toggle */}
-          <button
-            className="md:hidden"
-            onClick={() => setOpen(!open)}
-          >
+          <button className="md:hidden" onClick={() => setOpen(!open)}>
             {open ? <FaTimes /> : <FaBars />}
           </button>
         </div>
@@ -197,3 +276,4 @@ export default function Navbar() {
     </motion.header>
   );
 }
+
