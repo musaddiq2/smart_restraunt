@@ -16,7 +16,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 
-/* ===== Layouts ===== */
+/* ===== Admin Layout ===== */
 import AdminLayout from "./pages/Admin/AdminLayout";
 
 /* ===== Super Admin Pages ===== */
@@ -25,7 +25,7 @@ import RestaurantManagement from "./pages/Admin/SuperAdmin/RestaurantManagement"
 import AddRestaurant from "./pages/Admin/SuperAdmin/AddRestaurant";
 import AdminManagement from "./pages/Admin/SuperAdmin/AdminManagement";
 import AddAdmin from "./pages/Admin/SuperAdmin/AddAdmin";
-import SubscriptionManagement from "./pages/Admin/SuperAdmin/SubscriptionManagement";
+import SubscriptionManagement from "./pages/Admin/SuperAdmin/SubscriptionManagement"; // ✅ FIX
 import ProjectStatus from "./pages/Admin/SuperAdmin/ProjectStatus";
 import ClientManagement from "./pages/Admin/SuperAdmin/ClientManagement";
 import SystemAnalytics from "./pages/Admin/SuperAdmin/SystemAnalytics";
@@ -34,7 +34,7 @@ import SecurityControl from "./pages/Admin/SuperAdmin/SecurityControl";
 /* ===== Admin Pages ===== */
 import AdminDashboard from "./pages/Admin/Admin/AdminDashboard";
 
-/* ===== Shared Pages (Both Super Admin & Admin) ===== */
+/* ===== Shared Pages ===== */
 import Orders from "./pages/Admin/Shared/Orders";
 import MenuPage from "./pages/Admin/Shared/MenuPage";
 import Categories from "./pages/Admin/Shared/Categories";
@@ -62,7 +62,7 @@ const App = () => {
         <Route path="/order-success/:orderId" element={<OrderSuccess />} />
       </Route>
 
-      {/* ========= ADMIN (Super Admin & Admin) ========= */}
+      {/* ========= ADMIN ========= */}
       <Route
         path="/admin"
         element={
@@ -73,124 +73,121 @@ const App = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
 
-        {/* Super Admin Dashboard (Restaurant Management) */}
-        <Route 
-          path="dashboard" 
+        {/* Super Admin Dashboard */}
+        <Route
+          path="dashboard"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <Dashboard />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        {/* Regular Admin Dashboard */}
-        <Route 
-          path="admin-dashboard" 
+        {/* Admin Dashboard */}
+        <Route
+          path="admin-dashboard"
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        {/* Shared Routes */}
+        {/* Shared */}
         <Route path="orders" element={<Orders />} />
         <Route path="menu" element={<MenuPage />} />
         <Route path="categories" element={<Categories />} />
         <Route path="tables" element={<TableManagement />} />
 
-        {/* Restaurant Management (Super Admin Only) */}
-        <Route 
-          path="restaurants" 
+        {/* Super Admin Only */}
+        <Route
+          path="restaurants"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <RestaurantManagement />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="restaurants/add" 
+        <Route
+          path="restaurants/add"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <AddRestaurant />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="restaurants/edit/:id" 
+        <Route
+          path="restaurants/edit/:id"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <AddRestaurant />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        {/* View Restaurant (Super Admin Only) */}
-        <Route 
-          path="restaurants/view/:id" 
+        <Route
+          path="restaurants/view/:id"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <RestaurantManagement />
             </ProtectedRoute>
-          } 
+          }
         />
 
-        {/* Admin Management (Super Admin Only) */}
-        <Route 
-          path="add-admin" 
+        <Route
+          path="add-admin"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <AddAdmin />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="admin-management" 
+        <Route
+          path="admin-management"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <AdminManagement />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="subscriptions" 
+        <Route
+          path="subscriptions"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <SubscriptionManagement />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="project-status" 
+        <Route
+          path="project-status"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <ProjectStatus />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="clients" 
+        <Route
+          path="clients"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <ClientManagement />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="analytics" 
+        <Route
+          path="analytics"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <SystemAnalytics />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="security" 
+        <Route
+          path="security"
           element={
             <ProtectedRoute requiredRole="superadmin">
               <SecurityControl />
             </ProtectedRoute>
-          } 
+          }
         />
       </Route>
 

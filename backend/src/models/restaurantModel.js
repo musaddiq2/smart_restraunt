@@ -39,13 +39,13 @@ const restaurantSchema = new mongoose.Schema(
 
     contact: {
       type: String,
-      required: false,   // optional to avoid breaking old DB
+      required: false, // optional to avoid breaking old DB
       trim: true,
     },
 
     email: {
       type: String,
-      required: false,   // optional to avoid breaking old DB
+      required: false, // optional to avoid breaking old DB
       trim: true,
     },
 
@@ -54,6 +54,35 @@ const restaurantSchema = new mongoose.Schema(
       enum: ["Active", "Inactive"],
       default: "Active",
     },
+
+    // ✅ SUBSCRIPTION BLOCK (FIXED)
+    subscription: {
+      planId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SubscriptionPlan",
+      },
+
+      startDate: {
+        type: Date,
+      },
+
+      expiryDate: {
+        type: Date,
+      },
+
+      gracePeriodDays: {
+        type: Number,
+        default: 3, // configurable 2–7
+        min: 2,
+        max: 7,
+      },
+
+      status: {
+        type: String,
+        enum: ["ACTIVE", "GRACE", "EXPIRED", "DISABLED"],
+        default: "ACTIVE",
+      },
+    }, // ✅ COMMA WAS MISSING HERE
 
     restaurantImg: {
       type: String, // Cloudinary URL

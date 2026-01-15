@@ -13,6 +13,8 @@ import menuRoutes from "./routes/menuRoutes.js";
 import userRoutes from "./routes/UserRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import tableRoutes from "./routes/tableRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
+import "./cron/subscriptionCron.js";
 
 // Middleware
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -37,6 +39,27 @@ app.use(morgan("dev"));
 app.use("/uploads", express.static("uploads"));
 
 
+// ✅ API Info Route
+app.get("/api/v1", (req, res) => {
+  res.json({
+    success: true,
+    message: "Smart Restaurant API v1",
+    version: "1.0.0",
+    endpoints: {
+      auth: "/api/v1/auth",
+      admin: "/api/v1/admin",
+      categories: "/api/v1/categories",
+      restaurant: "/api/v1/restaurant",
+      menus: "/api/v1/menus",
+      orders: "/api/v1/orders",
+      users: "/api/v1/users",
+      tables: "/api/v1/tables",
+      subscriptions: "/api/v1/subscriptions",
+    },
+    documentation: "Visit each endpoint for specific route information",
+  });
+});
+
 // ✅ API Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
@@ -46,6 +69,10 @@ app.use("/api/v1/menus", menuRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tables", tableRoutes);
+app.use("/api/v1/subscriptions", subscriptionRoutes);
+
+
+
 
 // ✅ Test Route
 app.get("/", (req, res) => res.send("🍽️ Smart Restaurant API is running..."));

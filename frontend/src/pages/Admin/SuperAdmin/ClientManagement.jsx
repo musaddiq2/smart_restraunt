@@ -1,459 +1,533 @@
-import { Users, UserPlus, Heart, MessageCircle, Award, Sparkles, TrendingUp, Zap, Target, Clock, Star, Shield, Globe, Mail } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { User, Phone, Mail, CheckCircle, AlertCircle, Search, Filter, MoreVertical, Eye, MessageSquare, UserCheck, Clock, TrendingUp, Download, Plus } from "lucide-react";
 
-export default function ClientManagement() {
-  const [floatingIcons, setFloatingIcons] = useState([]);
-  const [progress, setProgress] = useState(0);
-  const [activeFeature, setActiveFeature] = useState(0);
+// Sample restaurant owner data
+const ownersData = [
+  {
+    id: "1",
+    name: "The Great Sagar Restaurant",
+    contact: "07947111504",
+    email: "sagar@example.com",
+    verified: true,
+    supportTickets: 2,
+    createdAt: "2025-11-18T06:16:39.513+00:00",
+    status: "active",
+    plan: "Pro",
+    revenue: 9999,
+    avatar: "https://ui-avatars.com/api/?name=Sagar+Restaurant&background=6366f1&color=fff"
+  },
+  {
+    id: "2",
+    name: "Crunchy Bites Restaurant",
+    contact: "7788778877",
+    email: "crunchy@example.com",
+    verified: false,
+    supportTickets: 1,
+    createdAt: "2025-11-19T05:38:44.848+00:00",
+    status: "active",
+    plan: "Basic",
+    revenue: 999,
+    avatar: "https://ui-avatars.com/api/?name=Crunchy+Bites&background=3b82f6&color=fff"
+  },
+  {
+    id: "3",
+    name: "Jabbar Paya House",
+    contact: "0240-2293344",
+    email: "jabbar@gmail.com",
+    verified: true,
+    supportTickets: 0,
+    createdAt: "2025-11-25T04:45:17.474+00:00",
+    status: "active",
+    plan: "Enterprise",
+    revenue: 24999,
+    avatar: "https://ui-avatars.com/api/?name=Jabbar+Paya&background=f59e0b&color=fff"
+  },
+  {
+    id: "4",
+    name: "Red Chilli",
+    contact: "0240-2789123",
+    email: "redinfo@gmail.com",
+    verified: false,
+    supportTickets: 3,
+    createdAt: "2025-12-04T03:36:01.693+00:00",
+    status: "inactive",
+    plan: "Basic",
+    revenue: 0,
+    avatar: "https://ui-avatars.com/api/?name=Red+Chilli&background=ef4444&color=fff"
+  },
+  {
+    id: "5",
+    name: "Spice Paradise",
+    contact: "9876543210",
+    email: "spice@paradise.com",
+    verified: true,
+    supportTickets: 0,
+    createdAt: "2025-11-10T08:20:15.123+00:00",
+    status: "active",
+    plan: "Pro",
+    revenue: 9999,
+    avatar: "https://ui-avatars.com/api/?name=Spice+Paradise&background=8b5cf6&color=fff"
+  },
+  {
+    id: "6",
+    name: "Ocean Breeze Cafe",
+    contact: "9988776655",
+    email: "ocean@breeze.com",
+    verified: true,
+    supportTickets: 1,
+    createdAt: "2025-10-22T11:45:30.456+00:00",
+    status: "active",
+    plan: "Enterprise",
+    revenue: 24999,
+    avatar: "https://ui-avatars.com/api/?name=Ocean+Breeze&background=06b6d4&color=fff"
+  },
+];
 
-  const features = [
-    { icon: <Users size={24} />, label: "Client Profiles", status: "complete", color: "blue" },
-    { icon: <MessageCircle size={24} />, label: "Communication", status: "in-progress", color: "green" },
-    { icon: <Award size={24} />, label: "Loyalty Programs", status: "in-progress", color: "purple" },
-    { icon: <Target size={24} />, label: "Analytics", status: "pending", color: "rose" },
+const ClientManagementDashboard = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [viewMode, setViewMode] = useState("grid"); // grid or table
+  const [selectedOwner, setSelectedOwner] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Stats computation
+  const totalRevenue = ownersData.reduce((acc, o) => acc + o.revenue, 0);
+  const activeClients = ownersData.filter(o => o.status === "active").length;
+  
+  const stats = [
+    { 
+      title: "Total Clients", 
+      value: ownersData.length, 
+      icon: <User size={24} className="text-blue-600"/>, 
+      bg: "bg-blue-100",
+      change: "+12%",
+      changePositive: true
+    },
+    { 
+      title: "Active Clients", 
+      value: activeClients, 
+      icon: <UserCheck size={24} className="text-green-600"/>, 
+      bg: "bg-green-100",
+      change: "+8%",
+      changePositive: true
+    },
+    { 
+      title: "Total Revenue", 
+      value: `₹${(totalRevenue / 1000).toFixed(1)}K`, 
+      icon: <TrendingUp size={24} className="text-purple-600"/>, 
+      bg: "bg-purple-100",
+      change: "+23%",
+      changePositive: true
+    },
+    { 
+      title: "Support Tickets", 
+      value: ownersData.reduce((acc, o) => acc + o.supportTickets, 0), 
+      icon: <AlertCircle size={24} className="text-amber-600"/>, 
+      bg: "bg-amber-100",
+      change: "-5%",
+      changePositive: false
+    },
   ];
 
-  useEffect(() => {
-    // Generate random floating icons
-    const icons = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: 12 + Math.random() * 8,
-      scale: 0.5 + Math.random() * 0.5,
-    }));
-    setFloatingIcons(icons);
+  // Filter & sort
+  const filteredOwners = [...ownersData]
+    .filter(o => {
+      const matchesSearch = o.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           o.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterStatus === "all" || o.status === filterStatus;
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "verified") return (b.verified === a.verified) ? 0 : b.verified ? 1 : -1;
+      if (sortBy === "tickets") return b.supportTickets - a.supportTickets;
+      if (sortBy === "revenue") return b.revenue - a.revenue;
+      return 0;
+    });
 
-    // Animate progress
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev >= 100 ? 0 : prev + 1));
-    }, 80);
-
-    // Rotate active feature
-    const featureInterval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 4);
-    }, 3000);
-
-    return () => {
-      clearInterval(interval);
-      clearInterval(featureInterval);
-    };
-  }, []);
+  const handleViewDetails = (owner) => {
+    setSelectedOwner(owner);
+    setShowDetailModal(true);
+  };
 
   return (
-    <div className="h-screen overflow-hidden relative bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+      <div className="max-w-7xl mx-auto">
 
-      {/* Floating Client Icons */}
-      {floatingIcons.map((icon) => (
-        <div
-          key={icon.id}
-          className="absolute opacity-10"
-          style={{
-            left: `${icon.x}%`,
-            top: `${icon.y}%`,
-            animation: `float ${icon.duration}s ease-in-out infinite`,
-            animationDelay: `${icon.delay}s`,
-            transform: `scale(${icon.scale})`,
-          }}
-        >
-          {icon.id % 5 === 0 && <Users size={48} className="text-blue-400" />}
-          {icon.id % 5 === 1 && <Heart size={48} className="text-cyan-400" />}
-          {icon.id % 5 === 2 && <MessageCircle size={48} className="text-teal-400" />}
-          {icon.id % 5 === 3 && <Award size={48} className="text-blue-400" />}
-          {icon.id % 5 === 4 && <Shield size={48} className="text-cyan-400" />}
-        </div>
-      ))}
-
-      {/* Main Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6">
-        
-        {/* Animated Users Icon Container */}
-        <div className="relative mb-10">
-          {/* Outer Ring */}
-          <div className="absolute inset-0 w-48 h-48 -m-12">
-            <div className="w-full h-full border-4 border-dashed border-blue-200 rounded-full animate-spin-slow"></div>
-          </div>
-          
-          {/* Middle Pulsing Ring */}
-          <div className="absolute inset-0 w-40 h-40 -m-8">
-            <div className="w-full h-full border-4 border-cyan-200 rounded-full animate-ping opacity-50"></div>
-          </div>
-          
-          {/* Main Icon Container */}
-          <div className="relative bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-600 p-10 rounded-3xl shadow-2xl animate-float">
-            <Users size={80} className="text-white animate-pulse-slow" />
-            
-            {/* Connecting Lines Effect */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-20 h-16 opacity-40">
-              <svg viewBox="0 0 100 100" className="w-full h-full animate-pulse">
-                <circle cx="50" cy="30" r="4" fill="#60a5fa" />
-                <circle cx="30" cy="60" r="4" fill="#22d3ee" />
-                <circle cx="70" cy="60" r="4" fill="#14b8a6" />
-                <line x1="50" y1="30" x2="30" y2="60" stroke="#60a5fa" strokeWidth="2" />
-                <line x1="50" y1="30" x2="70" y2="60" stroke="#60a5fa" strokeWidth="2" />
-              </svg>
-            </div>
-            
-            {/* Decorative Icons */}
-            <Heart className="absolute -top-3 -right-3 text-rose-400 animate-bounce-slow fill-rose-400" size={28} />
-            <Sparkles className="absolute -bottom-3 -left-3 text-yellow-400 animate-spin-slow" size={24} />
-            <MessageCircle className="absolute top-3 left-3 text-green-400 animate-pulse" size={26} />
-          </div>
-
-          {/* Top Globe Icon */}
-          <Globe className="absolute -top-8 left-1/2 -translate-x-1/2 text-blue-500 animate-bounce" size={28} />
-        </div>
-
-        {/* Main Heading with Badge */}
-        <div className="text-center mb-8 animate-fade-in">
-          {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-full shadow-lg mb-6 animate-bounce-slow">
-            <TrendingUp size={20} />
-            <span className="font-bold text-sm uppercase tracking-wider">Building Relationships</span>
-          </div>
-
-          {/* Main Title */}
-          <h1 className="text-6xl md:text-7xl font-extrabold mb-4">
-            <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent animate-gradient-x block mb-2">
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-lg">
+                <User className="text-white" size={32} />
+              </div>
               Client Management
-            </span>
-          </h1>
-
-          {/* Subtitle with Icon */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <Star className="text-yellow-500 animate-spin-slow" size={28} />
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
-              Crafting Soon
-            </h2>
-            <Star className="text-yellow-500 animate-spin-slow animation-delay-2000" size={28} />
+            </h1>
+            <p className="text-slate-600 text-lg">Manage restaurant owners, contacts, and support</p>
           </div>
-
-          {/* Description */}
-          <p className="text-gray-700 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-            Building a comprehensive client relationship platform with
-            <span className="font-bold text-blue-600"> 360° customer views</span>,
-            <span className="font-bold text-cyan-600"> intelligent communication tools</span>, and
-            <span className="font-bold text-teal-600"> loyalty management</span> features.
-          </p>
+          <div className="flex gap-3">
+            <button className="bg-white text-slate-700 px-5 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all border border-slate-200 flex items-center gap-2">
+              <Download size={20} />
+              Export
+            </button>
+            <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+              <Plus size={20} />
+              Add Client
+            </button>
+          </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full max-w-2xl mb-10 animate-fade-in animation-delay-500">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-gray-600 flex items-center gap-2">
-              <Clock size={18} className="text-blue-500" />
-              Development Progress
-            </span>
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              {progress}%
-            </span>
-          </div>
-          <div className="h-4 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
-              style={{ width: `${progress}%` }}
-            >
-              <div className="absolute inset-0 bg-white/30 animate-shimmer"></div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, i) => (
+            <div key={i} className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`${stat.bg} p-3 rounded-xl flex items-center justify-center`}>
+                  {stat.icon}
+                </div>
+                <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                  stat.changePositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                }`}>
+                  {stat.change}
+                </span>
+              </div>
+              <h3 className="text-3xl font-bold text-slate-800 mb-1">{stat.value}</h3>
+              <p className="text-slate-600">{stat.title}</p>
             </div>
-          </div>
-        </div>
-
-        {/* Feature Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mb-10 animate-fade-in animation-delay-700">
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={index}
-              icon={feature.icon}
-              label={feature.label}
-              status={feature.status}
-              color={feature.color}
-              active={activeFeature === index}
-            />
           ))}
         </div>
 
-        {/* Features Preview */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl p-6 max-w-2xl w-full mb-8 border-2 border-blue-100 animate-fade-in animation-delay-900">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <UserPlus className="text-blue-500" size={24} />
-            Key Features
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FeatureItem icon={<Users size={18} />} text="Client Database" />
-            <FeatureItem icon={<MessageCircle size={18} />} text="Messaging Hub" />
-            <FeatureItem icon={<Heart size={18} />} text="Engagement Tracking" />
-            <FeatureItem icon={<Award size={18} />} text="Rewards System" />
-            <FeatureItem icon={<Mail size={18} />} text="Email Campaigns" />
-            <FeatureItem icon={<Shield size={18} />} text="Data Security" />
+        {/* Controls Bar */}
+        <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200 mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="relative flex-1 w-full md:max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                className="pl-10 pr-4 py-3 border border-slate-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex gap-3 flex-wrap w-full md:w-auto">
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                className="px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="verified">Sort by Verification</option>
+                <option value="tickets">Sort by Tickets</option>
+                <option value="revenue">Sort by Revenue</option>
+              </select>
+
+              <div className="flex gap-2 bg-slate-100 rounded-xl p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    viewMode === "grid" ? "bg-white shadow-md text-blue-600" : "text-slate-600"
+                  }`}
+                >
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    viewMode === "table" ? "bg-white shadow-md text-blue-600" : "text-slate-600"
+                  }`}
+                >
+                  Table
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Benefit Pills */}
-        <div className="flex flex-wrap justify-center gap-3 max-w-4xl mb-8 animate-fade-in animation-delay-1100">
-          <BenefitPill icon={<Heart size={16} />} text="Build Loyalty" />
-          <BenefitPill icon={<MessageCircle size={16} />} text="Easy Communication" />
-          <BenefitPill icon={<Target size={16} />} text="Better Insights" />
-          <BenefitPill icon={<Zap size={16} />} text="Quick Actions" />
-        </div>
+        {/* Grid View */}
+        {viewMode === "grid" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredOwners.map(owner => (
+              <div key={owner.id} className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <img src={owner.avatar} alt={owner.name} className="w-16 h-16 rounded-full border-4 border-white/30" />
+                    <button className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                      <MoreVertical size={20} />
+                    </button>
+                  </div>
+                  <h3 className="text-xl font-bold mb-1">{owner.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      owner.status === "active" ? "bg-green-500/20 text-white border border-white/30" : "bg-red-500/20 text-white border border-white/30"
+                    }`}>
+                      {owner.status === "active" ? "Active" : "Inactive"}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white border border-white/30">
+                      {owner.plan}
+                    </span>
+                  </div>
+                </div>
 
-        {/* Animated Dots */}
-        <div className="flex items-center gap-3 mb-6 animate-fade-in animation-delay-1300">
-          <span className="w-4 h-4 rounded-full bg-blue-400 animate-bounce"></span>
-          <span className="w-4 h-4 rounded-full bg-cyan-500 animate-bounce animation-delay-200"></span>
-          <span className="w-4 h-4 rounded-full bg-teal-600 animate-bounce animation-delay-400"></span>
-        </div>
+                <div className="p-6">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-3 text-slate-700">
+                      <Phone size={16} className="text-slate-400" />
+                      <span className="text-sm">{owner.contact}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-700">
+                      <Mail size={16} className="text-slate-400" />
+                      <span className="text-sm truncate">{owner.email}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-700">
+                      <Clock size={16} className="text-slate-400" />
+                      <span className="text-sm">{new Date(owner.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
 
-        {/* Launch Date */}
-        <p className="text-gray-600 text-base animate-fade-in animation-delay-1500 flex items-center gap-2">
-          <Clock size={20} className="animate-spin-slow text-blue-500" />
-          Expected Launch: 
-          <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-            Q1 2025
-          </span>
-        </p>
+                  <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-slate-200">
+                    <div className="bg-slate-50 rounded-lg p-3">
+                      <p className="text-xs text-slate-500 mb-1">Revenue</p>
+                      <p className="text-sm font-bold text-slate-800">₹{owner.revenue.toLocaleString()}</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-lg p-3">
+                      <p className="text-xs text-slate-500 mb-1">Tickets</p>
+                      <p className="text-sm font-bold text-slate-800">{owner.supportTickets}</p>
+                    </div>
+                  </div>
 
-        {/* CTA Button */}
-        <button className="mt-8 px-10 py-5 bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 text-white text-lg font-bold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 animate-fade-in animation-delay-1700 relative overflow-hidden group">
-          <span className="relative z-10 flex items-center gap-3">
-            <UserPlus size={24} />
-            Get Notified
-            <Sparkles size={20} />
-          </span>
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-        </button>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm text-slate-600">Verification</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      owner.verified ? "bg-green-100 text-green-700 flex items-center gap-1" : "bg-red-100 text-red-700"
+                    }`}>
+                      {owner.verified && <CheckCircle size={14} />}
+                      {owner.verified ? "Verified" : "Unverified"}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleViewDetails(owner)}
+                      className="flex-1 bg-blue-50 text-blue-700 py-2.5 rounded-xl font-semibold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Eye size={16} />
+                      View
+                    </button>
+                    <button className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                      <MessageSquare size={16} />
+                      Contact
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Table View */}
+        {viewMode === "table" && (
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <tr>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Client</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Contact</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Plan</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Status</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Revenue</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Tickets</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOwners.map(owner => (
+                    <tr key={owner.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <img src={owner.avatar} alt={owner.name} className="w-10 h-10 rounded-full" />
+                          <div>
+                            <p className="font-semibold text-slate-800">{owner.name}</p>
+                            <p className="text-sm text-slate-500">{owner.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2 text-slate-700">
+                          <Phone size={16} className="text-slate-400" />
+                          {owner.contact}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-700">
+                          {owner.plan}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex flex-col gap-1">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1 w-fit ${
+                            owner.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}>
+                            {owner.status === "active" ? "Active" : "Inactive"}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1 w-fit ${
+                            owner.verified ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"
+                          }`}>
+                            {owner.verified ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+                            {owner.verified ? "Verified" : "Unverified"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 font-semibold text-slate-800">₹{owner.revenue.toLocaleString()}</td>
+                      <td className="py-4 px-6">
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          owner.supportTickets > 0 ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"
+                        }`}>
+                          {owner.supportTickets}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleViewDetails(owner)}
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          <button className="p-2 hover:bg-indigo-50 rounded-lg transition-colors text-indigo-600">
+                            <MessageSquare size={18} />
+                          </button>
+                          <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-600">
+                            <MoreVertical size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Detail Modal */}
+        {showDetailModal && selectedOwner && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <img src={selectedOwner.avatar} alt={selectedOwner.name} className="w-20 h-20 rounded-full border-4 border-white/30" />
+                    <div>
+                      <h3 className="text-2xl font-bold">{selectedOwner.name}</h3>
+                      <p className="text-white/80">{selectedOwner.plan} Plan</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowDetailModal(false)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 mb-4">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 text-slate-600 mb-2">
+                        <Phone size={16} />
+                        <span className="text-sm font-semibold">Phone</span>
+                      </div>
+                      <p className="text-slate-800 font-medium">{selectedOwner.contact}</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 text-slate-600 mb-2">
+                        <Mail size={16} />
+                        <span className="text-sm font-semibold">Email</span>
+                      </div>
+                      <p className="text-slate-800 font-medium">{selectedOwner.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 mb-4">Account Details</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-blue-50 rounded-xl p-4 text-center">
+                      <p className="text-sm text-slate-600 mb-1">Status</p>
+                      <p className={`text-lg font-bold ${selectedOwner.status === "active" ? "text-green-700" : "text-red-700"}`}>
+                        {selectedOwner.status === "active" ? "Active" : "Inactive"}
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 rounded-xl p-4 text-center">
+                      <p className="text-sm text-slate-600 mb-1">Revenue</p>
+                      <p className="text-lg font-bold text-purple-700">₹{selectedOwner.revenue.toLocaleString()}</p>
+                    </div>
+                    <div className="bg-amber-50 rounded-xl p-4 text-center">
+                      <p className="text-sm text-slate-600 mb-1">Tickets</p>
+                      <p className="text-lg font-bold text-amber-700">{selectedOwner.supportTickets}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-lg font-bold text-slate-800 mb-4">Verification Status</h4>
+                  <div className={`rounded-xl p-4 flex items-center gap-3 ${
+                    selectedOwner.verified ? "bg-green-50 border border-green-200" : "bg-amber-50 border border-amber-200"
+                  }`}>
+                    {selectedOwner.verified ? (
+                      <CheckCircle size={24} className="text-green-600" />
+                    ) : (
+                      <AlertCircle size={24} className="text-amber-600" />
+                    )}
+                    <div>
+                      <p className={`font-semibold ${selectedOwner.verified ? "text-green-700" : "text-amber-700"}`}>
+                        {selectedOwner.verified ? "Account Verified" : "Verification Pending"}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {selectedOwner.verified 
+                          ? "This account has been verified and is in good standing."
+                          : "This account requires verification. Please review submitted documents."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowDetailModal(false)}
+                    className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
+                  >
+                    Close
+                  </button>
+                  <button className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
+                    Send Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
-
-      {/* Bottom Wave Decoration */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none">
-        <svg className="absolute bottom-0 w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".2" className="fill-blue-300"></path>
-          <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".4" className="fill-cyan-300"></path>
-        </svg>
-      </div>
     </div>
   );
-}
+};
 
-/* Feature Card Component */
-function FeatureCard({ icon, label, status, color, active }) {
-  const colors = {
-    blue: 'from-blue-500 to-cyan-600',
-    green: 'from-green-500 to-emerald-600',
-    purple: 'from-purple-500 to-violet-600',
-    rose: 'from-rose-500 to-pink-600',
-  };
-
-  const statusColors = {
-    complete: 'bg-green-100 text-green-700 border-green-300',
-    'in-progress': 'bg-amber-100 text-amber-700 border-amber-300',
-    pending: 'bg-gray-100 text-gray-600 border-gray-300',
-  };
-
-  return (
-    <div
-      className={`relative bg-white/90 backdrop-blur-lg rounded-xl p-4 shadow-lg transition-all duration-500 border-2 ${
-        active ? 'border-blue-300 ring-4 ring-blue-200 scale-110 -translate-y-2' : 'border-gray-200 hover:scale-105'
-      }`}
-    >
-      {active && (
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors[color]} opacity-5 rounded-xl animate-pulse`}></div>
-      )}
-
-      <div className="relative text-center">
-        <div className={`inline-flex p-3 rounded-xl mb-3 bg-gradient-to-br ${colors[color]} shadow-md`}>
-          <div className="text-white">{icon}</div>
-        </div>
-        
-        <h4 className="text-sm font-bold text-gray-800 mb-2">{label}</h4>
-        
-        <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${statusColors[status]}`}>
-          {status === 'in-progress' ? 'In Progress' : status === 'complete' ? 'Complete' : 'Pending'}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* Feature Item Component */
-function FeatureItem({ icon, text }) {
-  return (
-    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-      <div className="text-blue-600">{icon}</div>
-      <span className="text-sm font-medium text-gray-700">{text}</span>
-    </div>
-  );
-}
-
-/* Benefit Pill Component */
-function BenefitPill({ icon, text }) {
-  return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-lg rounded-full shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-blue-300 hover:-translate-y-1 group">
-      <div className="text-blue-600 group-hover:scale-110 transition-transform">{icon}</div>
-      <span className="text-sm font-medium text-gray-700">{text}</span>
-    </div>
-  );
-}
-
-// Add custom animations
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes blob {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    33% {
-      transform: translate(30px, -50px) scale(1.1);
-    }
-    66% {
-      transform: translate(-20px, 20px) scale(0.9);
-    }
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0) rotate(0deg);
-    }
-    50% {
-      transform: translateY(-30px) rotate(10deg);
-    }
-  }
-
-  @keyframes spin-slow {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes bounce-slow {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-12px);
-    }
-  }
-
-  @keyframes pulse-slow {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  @keyframes gradient-x {
-    0%, 100% {
-      background-size: 200% 200%;
-      background-position: left center;
-    }
-    50% {
-      background-size: 200% 200%;
-      background-position: right center;
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-
-  .animate-blob {
-    animation: blob 7s infinite;
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-spin-slow {
-    animation: spin-slow 4s linear infinite;
-  }
-
-  .animate-bounce-slow {
-    animation: bounce-slow 2.5s ease-in-out infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse-slow 3s ease-in-out infinite;
-  }
-
-  .animate-gradient-x {
-    animation: gradient-x 3s ease infinite;
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.8s ease-out forwards;
-  }
-
-  .animate-shimmer {
-    animation: shimmer 2s infinite;
-  }
-
-  .animation-delay-200 {
-    animation-delay: 0.2s;
-  }
-
-  .animation-delay-500 {
-    animation-delay: 0.5s;
-  }
-
-  .animation-delay-700 {
-    animation-delay: 0.7s;
-  }
-
-  .animation-delay-900 {
-    animation-delay: 0.9s;
-  }
-
-  .animation-delay-1100 {
-    animation-delay: 1.1s;
-  }
-
-  .animation-delay-1300 {
-    animation-delay: 1.3s;
-  }
-
-  .animation-delay-1500 {
-    animation-delay: 1.5s;
-  }
-
-  .animation-delay-1700 {
-    animation-delay: 1.7s;
-  }
-
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-
-  .animation-delay-4000 {
-    animation-delay: 4s;
-  }
-`;
-document.head.appendChild(style);
+export default ClientManagementDashboard;
