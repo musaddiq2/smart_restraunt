@@ -22,3 +22,4 @@ router.put("/:menuId", protect, isAdmin, checkPermission("canManageMenus"), uplo
 router.delete("/:menuId", protect, isAdmin, checkPermission("canManageMenus"), deleteMenuItem);
 
 export default router;
+

@@ -32,5 +32,7 @@ router.patch("/:id/status", updateOrderStatus);
 
 
 router.delete("/:id", cancelOrder);
+router.put("/:id/status", updateOrderStatus);
+
 
 export default router;

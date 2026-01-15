@@ -1,12 +1,10 @@
-
-
 // src/pages/Menu.jsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import axios from "axios";
-
+import toast from "react-hot-toast";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -19,6 +17,28 @@ const cardVariants = {
 
 const Section = ({ title, data }) => {
   const { addItem } = useCart();
+
+  const handleAddToCart = (item) => {
+    addItem({
+      itemId: item._id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+    });
+
+    toast.success(`${item.name} added to cart 🛒`, {
+      duration: 2000,
+      style: {
+        background: "#1e293b",
+        color: "#facc15",
+        border: "1px solid #facc15",
+      },
+      iconTheme: {
+        primary: "#facc15",
+        secondary: "#000",
+      },
+    });
+  };
 
   return (
     <div className="mb-12">
@@ -60,15 +80,8 @@ const Section = ({ title, data }) => {
                   ₹{item.price}
                 </p>
                 <button
-                  onClick={() =>
-                    addItem({
-                      itemId: item._id,
-                      name: item.name,
-                      price: item.price,
-                      image: item.image,
-                    })
-                  }
-                  className="flex items-center gap-1 bg-yellow-500 hover:bg-yellow-400 text-black px-3 py-1 rounded-md text-sm font-semibold transition-colors"
+                  onClick={() => handleAddToCart(item)}
+                  className="flex items-center gap-1 bg-yellow-500 hover:bg-yellow-400 text-black px-3 py-1 rounded-md text-sm font-semibold transition-colors active:scale-95"
                 >
                   <FaShoppingCart className="text-sm" /> Add
                 </button>
@@ -86,29 +99,22 @@ const Menu = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
-
-
   useEffect(() => {
-  const fetchMenus = async () => {
-    try {
-      const API_BASE = import.meta.env.VITE_API_URL; // ✅ Vite env
-      const res = await axios.get(`${API_BASE}/menus`); // GET request
-      setMenuItems(res.data?.data || res.data || []); // axios already returns JSON
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load menu");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchMenus = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL;
+        const res = await axios.get(`${API_BASE}/menus`);
+        setMenuItems(res.data?.data || res.data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load menu");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchMenus();
-}, []);
-
-
-
-
+    fetchMenus();
+  }, []);
 
   const categories = [...new Set(menuItems.map((item) => item.category))];
 
@@ -146,5 +152,3 @@ const Menu = () => {
 };
 
 export default Menu;
-
-

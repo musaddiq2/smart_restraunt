@@ -1,7 +1,9 @@
+
 import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaChevronLeft } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 export default function Checkout() {
@@ -44,42 +46,29 @@ export default function Checkout() {
 
     const payload = {
       orderType: cart.orderType === "DINE_IN" ? "DineIn" : "Takeaway",
-
-      tableNumber:
-        cart.orderType === "DINE_IN" ? cart.tableId : "",
-
+      tableNumber: cart.orderType === "DINE_IN" ? cart.tableId : "",
       customerName: cart.customer.name,
       customerMobile: cart.customer.phone,
-
       items: cart.items.map((item) => ({
         itemId: item.itemId || item._id,
         itemName: item.itemName || item.name,
         quantity: Number(item.quantity),
         price: Number(item.price),
       })),
-
       totalAmount: Number(total),
-
       paymentMethod: "Cash",
       notes: cart.notes || "",
     };
 
-    console.log("✅ FINAL PAYLOAD:", payload);
-
     try {
       setLoading(true);
-
-    const API_BASE = import.meta.env.VITE_API_URL;
-const res = await axios.post(`${API_BASE}/orders`, payload);
-
+      const API_BASE = import.meta.env.VITE_API_URL;
+      const res = await axios.post(`${API_BASE}/orders`, payload);
 
       toast.success("Order placed successfully 🎉");
       clearCart();
       navigate(`/order-success/${res.data.order._id}`);
     } catch (error) {
-      console.error("🔥 BACKEND ERROR:", error);
-
-      // Safe error handling
       if (error.response?.data?.errors) {
         error.response.data.errors.forEach((err) => toast.error(err));
       } else if (error.response?.data?.message) {
@@ -94,26 +83,22 @@ const res = await axios.post(`${API_BASE}/orders`, payload);
 
   // ---------------- UI ----------------
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-6 md:p-12">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            position: "absolute",
-            top: 16,
-            left: 16,
-            fontSize: 24,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          ←
-        </button>
+    <div className="min-h-screen bg-[#0f172a] text-white p-4 md:p-8">
+      <div className="max-w-4xl mx-auto mt-4 md:mt-8">
 
-        <h2 className="text-4xl font-bold text-yellow-400 mb-8 text-center">
-          🛒 Checkout
-        </h2>
+        {/* ⬅ BACK BUTTON + HEADING */}
+        <div className="flex items-center justify-center relative mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute left-0 text-yellow-400 hover:text-yellow-300 transition text-xl"
+          >
+            <FaChevronLeft />
+          </button>
+
+          <h2 className="text-3xl md:text-4xl font-bold text-yellow-400">
+            🛒 Checkout
+          </h2>
+        </div>
 
         {/* ORDER TYPE */}
         <div className="mb-6">
@@ -167,7 +152,9 @@ const res = await axios.post(`${API_BASE}/orders`, payload);
               className="flex justify-between bg-[#1e293b] p-4 rounded-lg border border-yellow-500"
             >
               <div>
-                <p className="text-yellow-400 font-bold">{item.itemName}</p>
+                <p className="text-yellow-400 font-bold">
+                  {item.itemName || item.name}
+                </p>
                 <p className="text-yellow-200">
                   ₹{item.price} × {item.quantity}
                 </p>
@@ -204,7 +191,9 @@ const res = await axios.post(`${API_BASE}/orders`, payload);
         >
           {loading ? "Placing Order..." : "Place Order"}
         </button>
+
       </div>
     </div>
   );
 }
+

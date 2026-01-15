@@ -1,28 +1,29 @@
-// By Arib Shaikh
-// src/controllers/OrderController.js
 
+import mongoose from "mongoose";
 import Order from "../models/OrderModel.js";
 import { orderValidationSchema } from "../validations/orderValidation.js";
+import { getIO } from "../utils/socket.js";
 
-/* ======================================================
-   HELPER: CALCULATE TOTAL AMOUNT
-   items: [{ itemName, quantity, price }]
-====================================================== */
-const calcTotal = (items = []) => {
-  return items.reduce(
+// ====================== HELPERS ======================
+const calcTotal = (items = []) =>
+  items.reduce(
     (sum, item) =>
       sum + Number(item.price || 0) * Number(item.quantity || 1),
     0
   );
+
+const emitSocketEvent = (event, payload) => {
+  try {
+    const io = getIO();
+    io.emit(event, payload);
+  } catch (err) {
+    console.warn("⚠️ Socket.io not initialized yet");
+  }
 };
 
-/* ======================================================
-   CREATE / PLACE ORDER (Customer)
-   POST /api/v1/orders
-====================================================== */
+// ====================== PLACE ORDER ======================
 export const placeOrder = async (req, res) => {
   try {
-    // Joi validation
     const { error, value } = orderValidationSchema.validate(req.body, {
       abortEarly: false,
     });
@@ -67,30 +68,27 @@ export const placeOrder = async (req, res) => {
       paymentStatus: "Unpaid",
     });
 
-    return res.status(201).json({
+    emitSocketEvent("newOrder", order);
+
+    res.status(201).json({
       success: true,
       message: "Order placed successfully",
       order,
     });
-  } catch (error) {
-    console.error("🔥 Error placing order:", error);
-    return res.status(500).json({
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
 
-/* ======================================================
-   GET ALL ORDERS (Admin / Staff)
-   GET /api/v1/orders
-====================================================== */
+// ====================== GET ALL ORDERS ======================
 export const getAllOrders = async (req, res) => {
   try {
     const filter = {};
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
+    if (req.query.status) filter.status = req.query.status;
 
     const orders = await Order.find(filter).sort({ createdAt: -1 });
 
@@ -106,14 +104,19 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-/* ======================================================
-   GET SINGLE ORDER
-   GET /api/v1/orders/:id
-====================================================== */
+// ====================== GET ORDER BY ID ======================
 export const getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+      });
+    }
+
+    const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -121,9 +124,26 @@ export const getOrderById = async (req, res) => {
       });
     }
 
+    const CANCEL_WINDOW_SECONDS = 5;
+    const createdAt = new Date(order.createdAt).getTime();
+    const now = Date.now();
+    const diffSeconds = Math.floor((now - createdAt) / 1000);
+
+    const remainingSeconds = Math.max(
+      0,
+      CANCEL_WINDOW_SECONDS - diffSeconds
+    );
+
+    const cancelAllowed =
+      order.status === "Pending" &&
+      order.paymentStatus === "Unpaid" &&
+      remainingSeconds > 0;
+
     res.status(200).json({
       success: true,
       order,
+      cancelAllowed,
+      remainingSeconds,
     });
   } catch (error) {
     res.status(500).json({
@@ -133,13 +153,18 @@ export const getOrderById = async (req, res) => {
   }
 };
 
-/* ======================================================
-   UPDATE ORDER STATUS (Kitchen / Admin)
-   PATCH /api/v1/orders/:id/status
-====================================================== */
+// ====================== UPDATE ORDER STATUS ======================
 export const updateOrderStatus = async (req, res) => {
   try {
+    const { id } = req.params;
     const { status } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+      });
+    }
 
     const validStatuses = [
       "Pending",
@@ -155,7 +180,7 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -166,9 +191,14 @@ export const updateOrderStatus = async (req, res) => {
     order.status = status;
     await order.save();
 
+    emitSocketEvent("orderUpdated", {
+      orderId: order._id,
+      status: order.status,
+    });
+
     res.status(200).json({
       success: true,
-      message: "Order status updated successfully",
+      message: "Order status updated",
       order,
     });
   } catch (error) {
@@ -179,14 +209,19 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-/* ======================================================
-   CANCEL ORDER (Customer)
-   DELETE /api/v1/orders/:id
-====================================================== */
+// ====================== CANCEL ORDER ======================
 export const cancelOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+      });
+    }
+
+    const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -194,28 +229,56 @@ export const cancelOrder = async (req, res) => {
       });
     }
 
-    // Cannot cancel completed orders
-    if (order.status === "Completed") {
+    if (order.status !== "Pending") {
       return res.status(400).json({
         success: false,
-        message: "Completed order cannot be cancelled",
+        message: "Order cannot be cancelled",
       });
     }
 
     order.status = "Cancelled";
-    order.cancelReason = req.body.reason || "Cancelled by user";
-
     await order.save();
+
+    emitSocketEvent("orderUpdated", {
+      orderId: order._id,
+      status: "Cancelled",
+    });
 
     res.status(200).json({
       success: true,
-      message: "Order cancelled successfully",
+      message: "Order cancelled",
       order,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
