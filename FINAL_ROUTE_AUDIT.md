@@ -66,7 +66,7 @@ All frontend API calls now use consistent `/api/v1` prefix and environment varia
 #### API Client Files:
 1. **`axiosClient.js`** ✅
    - Base URL: Uses `VITE_API_BASE_URL` env variable
-   - Default: `http://localhost:5000/api/v1`
+   - Default: ` :5000/api/v1`
 
 2. **`axiosInstance.js`** ✅
    - Fixed to use `import.meta.env` (Vite syntax)
