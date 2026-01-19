@@ -1,19 +1,27 @@
+
+import http from "http";
 import dotenv from "dotenv";
 import app from "./app.js";
 import connectDB from "./config/db.js";
-import "./cron/subscriptionCron.js";
 
-
-// ✅ Load environment variables first
+// Load environment variables
 dotenv.config();
 
-// ✅ Connect to Database
+// Connect to MongoDB
 connectDB();
 
-// ✅ PORT now comes from .env with fallback
-const PORT = process.env.PORT || 5000;
+// Create HTTP server
+const server = http.createServer(app);
 
-// ✅ Start server
-app.listen(PORT, () => {
+// Initialize Socket.IO
+initSocket(server);
+
+// Start server
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+
+
+

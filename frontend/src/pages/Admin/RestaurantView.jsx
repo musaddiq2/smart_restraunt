@@ -4,6 +4,9 @@ import axios from "axios";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 
+
+
+
 export default function RestaurantView() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,7 +14,8 @@ export default function RestaurantView() {
   const [loading, setLoading] = useState(true);
   const containerRef = useRef(null);
 
-  const API = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1"}/restaurant/${id}`;
+  const API_BASE = import.meta.env.VITE_API_URL;
+  const API = `${API_BASE}/restaurant/${id}`;
 
   useEffect(() => {
     const fetchOne = async () => {
@@ -27,8 +31,10 @@ export default function RestaurantView() {
         setLoading(false);
       }
     };
+
     fetchOne();
   }, [API, navigate]);
+
 
   useEffect(() => {
     if (!loading && containerRef.current) {

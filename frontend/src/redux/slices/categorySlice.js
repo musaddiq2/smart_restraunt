@@ -2,8 +2,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
-const API_BASE = `${API}/categories`;
+const API_URL = import.meta.env.VITE_API_URL;
+const API_BASE = `${API_URL}/categories`;
+
 
 // ===============================
 // ✅ Fetch Categories

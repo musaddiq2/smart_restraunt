@@ -34,39 +34,48 @@ export default function AddAdmin() {
       return;
     }
 
-    setLoading(true);
-    try {
-      // Using an empty string for API Key placeholder, as per instructions.
-      const apiKey = ""; 
-      const apiUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1"}/auth/register-admin`;
+setLoading(true);
 
-      const { data } = await axios.post(
-        apiUrl,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+try {
+  const API_BASE = import.meta.env.VITE_API_URL;
 
-      toast.success("✅ New administrator added successfully!", {
-        position: "top-center",
-        autoClose: 2000,
-        theme: "colored",
-      });
-
-      // Clear form after success
-      setFormData({ name: "", email: "", password: "" });
-    } catch (error) {
-      // Check for common error structure from backend
-      toast.error(error.response?.data?.message || "❌ Failed to add administrator. Check server logs.", {
-        position: "top-center",
-        autoClose: 2500,
-        theme: "colored",
-      });
-    } finally {
-      setLoading(false);
+  const { data } = await axios.post(
+    `${API_BASE}/auth/register-admin`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
-  };
+  );
+
+  toast.success("✅ New administrator added successfully!", {
+    position: "top-center",
+    autoClose: 2000,
+    theme: "colored",
+  });
+
+  // Clear form after success
+  setFormData({ name: "", email: "", password: "" });
+
+} catch (error) {
+  toast.error(
+    error.response?.data?.message ||
+      "❌ Failed to add administrator. Check server logs.",
+    {
+      position: "top-center",
+      autoClose: 2500,
+      theme: "colored",
+    }
+  );
+} finally {
+  setLoading(false);
+}
+};
+
+
+
+
 
   return (
     // Updated to use the Dashboard's warm background color

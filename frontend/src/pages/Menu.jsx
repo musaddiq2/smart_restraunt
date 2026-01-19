@@ -106,7 +106,7 @@ const MenuItem = ({ item }) => {
 const MenuSection = ({ title, items }) => {
   return (
     <div className="mb-12">
-      <h2 className="text-3xl font-bold text-yellow-400 mb-6 border-l-4 border-yellow-500 pl-3">
+      <h2 className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-6 border-l-4 border-yellow-500 pl-3">
         {title}
       </h2>
 
@@ -267,7 +267,6 @@ const MenuApp = () => {
         </div>
       </div>
     );
-  }
 
   if (error) {
     return (
@@ -283,7 +282,6 @@ const MenuApp = () => {
         </div>
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f172a] to-[#1e293b] text-white pb-20 md:pb-0">

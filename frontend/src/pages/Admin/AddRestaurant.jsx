@@ -3,10 +3,13 @@ import axios from "axios";
 import { gsap } from "gsap";
 import { useDropzone } from "react-dropzone";
 
+
+
 export default function AddRestaurantModal({ open, onClose, onSuccess, restaurant }) {
-  const API = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1"}/restaurant`;
+  const API = `${import.meta.env.VITE_API_URL}/restaurant`;
   const modalRef = useRef(null);
   const formRef = useRef(null);
+
 
   const generateRestaurantId = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
