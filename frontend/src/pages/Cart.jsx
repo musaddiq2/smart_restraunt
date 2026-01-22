@@ -1,3 +1,6 @@
+
+
+
 import React from "react";
 import { FaChevronLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -6,22 +9,69 @@ import { toast } from "react-hot-toast";
 
 export default function Cart() {
   const navigate = useNavigate();
+  const { cart, setCart } = useCart();
 
-  const {
-    cart,
-    updateQty,
-    removeItem,
-    setOrderType,
-    setTable,
-    setCustomer,
-    setNotes,
-    subtotal,
-    total,
-  } = useCart();
+  /* ====================== HELPERS ====================== */
 
-  // ✅ VALIDATION HANDLER
+  const updateQty = (itemId, newQty) => {
+    if (newQty < 1) return;
+
+    setCart((prev) => ({
+      ...prev,
+      items: prev.items.map((item) =>
+        item.itemId === itemId
+          ? { ...item, quantity: newQty }
+          : item
+      ),
+    }));
+  };
+
+  const removeItem = (itemId) => {
+    setCart((prev) => ({
+      ...prev,
+      items: prev.items.filter((item) => item.itemId !== itemId),
+    }));
+  };
+
+  const setOrderType = (value) => {
+    setCart((prev) => ({
+      ...prev,
+      orderType: value,
+      tableId: value === "TAKEAWAY" ? "" : prev.tableId,
+    }));
+  };
+
+  const setTable = (value) => {
+    setCart((prev) => ({ ...prev, tableId: value }));
+  };
+
+  const setCustomer = (field, value) => {
+    setCart((prev) => ({
+      ...prev,
+      customer: {
+        ...prev.customer,
+        [field]: value,
+      },
+    }));
+  };
+
+  const setNotes = (value) => {
+    setCart((prev) => ({ ...prev, notes: value }));
+  };
+
+  /* ====================== TOTALS ====================== */
+
+  const subtotal = cart.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  const packingFee = cart.charges?.packingFee || 0;
+  const total = subtotal + packingFee;
+
+  /* ====================== VALIDATION ====================== */
+
   const handleCheckout = () => {
-    // ❌ Empty cart
     if (!cart.items || cart.items.length === 0) {
       toast.error("Your cart is empty");
       return;
@@ -31,52 +81,44 @@ export default function Cart() {
     const phone = cart.customer.phone?.trim();
     const table = cart.tableId?.trim();
 
-    // ❌ Name required
     if (!name) {
       toast.error("Customer name is required");
       return;
     }
 
-    // ❌ Name validation (letters & spaces only, min 2 chars)
-    const nameRegex = /^[A-Za-z ]{2,}$/;
-    if (!nameRegex.test(name)) {
+    if (!/^[A-Za-z ]{2,}$/.test(name)) {
       toast.error("Enter a valid customer name");
       return;
     }
 
-    // ❌ Phone required
     if (!phone) {
       toast.error("Phone number is required");
       return;
     }
 
-    // ❌ Phone must be exactly 10 digits
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone)) {
+    if (!/^[0-9]{10}$/.test(phone)) {
       toast.error("Phone number must be exactly 10 digits");
       return;
     }
 
-    // ❌ Table required for Dine In
     if (cart.orderType === "DINE_IN" && !table) {
       toast.error("Table number is required for Dine In");
       return;
     }
 
-    // ✅ ALL GOOD
     navigate("/checkout");
   };
+
+  /* ====================== UI ====================== */
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-4 md:p-8">
       <div className="max-w-4xl mx-auto mt-4 md:mt-8">
 
-        {/* BACK + HEADING */}
         <div className="flex items-center justify-center relative mb-6">
           <button
             onClick={() => navigate(-1)}
             className="absolute left-0 text-yellow-400 hover:text-yellow-300 transition text-xl"
-            title="Go Back"
           >
             <FaChevronLeft />
           </button>
@@ -86,7 +128,6 @@ export default function Cart() {
           </h2>
         </div>
 
-        {/* Order Type */}
         <div className="mb-6">
           <label className="block mb-2 font-semibold text-yellow-300">
             Order Type
@@ -101,7 +142,6 @@ export default function Cart() {
           </select>
         </div>
 
-        {/* Customer Details */}
         <div className="mb-6 bg-[#1e293b] p-4 rounded-lg border border-yellow-500 space-y-4">
           <div>
             <label className="block mb-1 font-semibold text-yellow-300">
@@ -111,10 +151,12 @@ export default function Cart() {
               type="text"
               value={cart.customer.name}
               onChange={(e) =>
-                setCustomer("name", e.target.value.replace(/[^A-Za-z ]/g, ""))
+                setCustomer(
+                  "name",
+                  e.target.value.replace(/[^A-Za-z ]/g, "")
+                )
               }
               className="w-full p-3 rounded-lg bg-[#0f172a] border border-yellow-400 text-yellow-200"
-              placeholder="Enter your name"
             />
           </div>
 
@@ -130,7 +172,6 @@ export default function Cart() {
                 setCustomer("phone", e.target.value.replace(/\D/g, ""))
               }
               className="w-full p-3 rounded-lg bg-[#0f172a] border border-yellow-400 text-yellow-200"
-              placeholder="Enter 10-digit phone number"
             />
           </div>
 
@@ -144,13 +185,11 @@ export default function Cart() {
                 value={cart.tableId || ""}
                 onChange={(e) => setTable(e.target.value)}
                 className="w-full p-3 rounded-lg bg-[#0f172a] border border-yellow-400 text-yellow-200"
-                placeholder="e.g. T5"
               />
             </div>
           )}
         </div>
 
-        {/* Cart Items */}
         {cart.items.length === 0 ? (
           <p className="text-gray-400 text-center py-16 text-lg">
             Your cart is empty
@@ -180,9 +219,7 @@ export default function Cart() {
 
                 <div className="flex items-center gap-2 mt-3 sm:mt-0">
                   <button
-                    onClick={() =>
-                      updateQty(item.itemId, item.quantity - 1)
-                    }
+                    onClick={() => updateQty(item.itemId, item.quantity - 1)}
                     className="px-3 py-1 bg-yellow-500 text-[#0f172a] font-bold rounded"
                   >
                     −
@@ -193,9 +230,7 @@ export default function Cart() {
                   </span>
 
                   <button
-                    onClick={() =>
-                      updateQty(item.itemId, item.quantity + 1)
-                    }
+                    onClick={() => updateQty(item.itemId, item.quantity + 1)}
                     className="px-3 py-1 bg-yellow-500 text-[#0f172a] font-bold rounded"
                   >
                     +
@@ -213,7 +248,6 @@ export default function Cart() {
           </div>
         )}
 
-        {/* Notes */}
         <div className="mb-6 bg-[#1e293b] p-4 rounded-lg border border-yellow-500">
           <label className="block mb-1 font-semibold text-yellow-300">
             Notes (Optional)
@@ -226,7 +260,6 @@ export default function Cart() {
           />
         </div>
 
-        {/* Totals */}
         <div className="mb-6 bg-[#1e293b] p-4 rounded-lg border border-yellow-500">
           <div className="flex justify-between">
             <span>Subtotal</span>
@@ -234,7 +267,7 @@ export default function Cart() {
           </div>
           <div className="flex justify-between">
             <span>Packing Fee</span>
-            <span>₹{cart.charges.packingFee}</span>
+            <span>₹{packingFee}</span>
           </div>
           <div className="flex justify-between font-bold text-yellow-400 text-lg border-t border-yellow-500 pt-2">
             <span>Total</span>
@@ -242,7 +275,6 @@ export default function Cart() {
           </div>
         </div>
 
-        {/* Checkout Button */}
         <button
           onClick={handleCheckout}
           className="w-full py-3 bg-yellow-500 text-[#0f172a] font-bold rounded-lg hover:bg-yellow-400"
@@ -253,4 +285,3 @@ export default function Cart() {
     </div>
   );
 }
-

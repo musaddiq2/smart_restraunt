@@ -3,6 +3,8 @@ import Navbar from "../components/Navbar";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+
+
 gsap.registerPlugin(ScrollTrigger);
 
 export default function HeroSection() {
@@ -30,6 +32,8 @@ export default function HeroSection() {
     }, 4000); // slower slide transition
     return () => clearInterval(interval);
   }, []);
+
+  
 
   // GSAP fade + scale animation for slides
   useEffect(() => {

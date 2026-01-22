@@ -1,16 +1,23 @@
 
+
+
+
+
 import mongoose from "mongoose";
 import Order from "../models/OrderModel.js";
 import { orderValidationSchema } from "../validations/orderValidation.js";
 import { getIO } from "../utils/socket.js";
 
-// ====================== HELPERS ======================
-const calcTotal = (items = []) =>
-  items.reduce(
-    (sum, item) =>
-      sum + Number(item.price || 0) * Number(item.quantity || 1),
-    0
-  );
+/* =========================
+   HELPERS
+========================= */
+const calcTotal = (items = []) => {
+  return items.reduce((sum, item) => {
+    const price = Number(item.price || 0);
+    const qty = Number(item.quantity || 1);
+    return sum + price * qty;
+  }, 0);
+};
 
 const emitSocketEvent = (event, payload) => {
   try {
@@ -21,7 +28,9 @@ const emitSocketEvent = (event, payload) => {
   }
 };
 
-// ====================== PLACE ORDER ======================
+/* =========================
+   PLACE ORDER
+========================= */
 export const placeOrder = async (req, res) => {
   try {
     const { error, value } = orderValidationSchema.validate(req.body, {
@@ -37,14 +46,21 @@ export const placeOrder = async (req, res) => {
     }
 
     const {
-      tableNumber,
-      items,
       customerName,
       customerMobile,
+      tableNumber,
       orderType,
+      items,
       notes,
       paymentMethod,
     } = value;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Order must contain at least one item",
+      });
+    }
 
     const totalAmount = calcTotal(items);
 
@@ -56,55 +72,64 @@ export const placeOrder = async (req, res) => {
     }
 
     const order = await Order.create({
-      tableNumber: tableNumber || "",
       customerName: customerName || "",
       customerMobile: customerMobile || "",
+      tableNumber: tableNumber || "",
       orderType: orderType || "DineIn",
       items,
       totalAmount,
       notes: notes || "",
       status: "Pending",
-      paymentMethod: paymentMethod || "Cash",
-      paymentStatus: "Unpaid",
+      paymentMethod: paymentMethod || null,
+      paymentStatus: "Pending",
+      transactionId: null,
     });
 
     emitSocketEvent("newOrder", order);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Order placed successfully",
       order,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
+  } catch (error) {
+    console.error("❌ Place order error:", error);
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
 
-// ====================== GET ALL ORDERS ======================
+/* =========================
+   GET ALL ORDERS
+========================= */
 export const getAllOrders = async (req, res) => {
   try {
     const filter = {};
+
     if (req.query.status) filter.status = req.query.status;
+    if (req.query.paymentStatus)
+      filter.paymentStatus = req.query.paymentStatus;
 
     const orders = await Order.find(filter).sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       orders,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("❌ Get all orders error:", error);
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
-// ====================== GET ORDER BY ID ======================
+/* =========================
+   GET ORDER BY ID
+========================= */
 export const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -117,6 +142,7 @@ export const getOrderById = async (req, res) => {
     }
 
     const order = await Order.findById(id);
+
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -124,6 +150,7 @@ export const getOrderById = async (req, res) => {
       });
     }
 
+    /* ===== Cancel Window Logic ===== */
     const CANCEL_WINDOW_SECONDS = 5;
     const createdAt = new Date(order.createdAt).getTime();
     const now = Date.now();
@@ -136,24 +163,27 @@ export const getOrderById = async (req, res) => {
 
     const cancelAllowed =
       order.status === "Pending" &&
-      order.paymentStatus === "Unpaid" &&
+      order.paymentStatus === "Pending" &&
       remainingSeconds > 0;
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       order,
       cancelAllowed,
       remainingSeconds,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("❌ Get order error:", error);
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
-// ====================== UPDATE ORDER STATUS ======================
+/* =========================
+   UPDATE ORDER STATUS
+========================= */
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -181,10 +211,19 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     const order = await Order.findById(id);
+
     if (!order) {
       return res.status(404).json({
         success: false,
         message: "Order not found",
+      });
+    }
+
+    // ❌ Prevent changing status after cancellation
+    if (order.status === "Cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Cancelled order cannot be updated",
       });
     }
 
@@ -196,20 +235,81 @@ export const updateOrderStatus = async (req, res) => {
       status: order.status,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Order status updated",
+      message: "Order status updated successfully",
       order,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("❌ Update status error:", error);
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
-// ====================== CANCEL ORDER ======================
+/* =========================
+   UPDATE PAYMENT STATUS
+========================= */
+export const updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentStatus, paymentMethod, transactionId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+      });
+    }
+
+    const validPaymentStatuses = ["Pending", "Paid", "Failed"];
+
+    if (!validPaymentStatuses.includes(paymentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment status",
+      });
+    }
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    order.paymentStatus = paymentStatus;
+    order.paymentMethod = paymentMethod || order.paymentMethod;
+    order.transactionId = transactionId || null;
+
+    await order.save();
+
+    emitSocketEvent("paymentUpdated", {
+      orderId: order._id,
+      paymentStatus: order.paymentStatus,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment status updated",
+      order,
+    });
+  } catch (error) {
+    console.error("❌ Payment update error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* =========================
+   CANCEL ORDER
+========================= */
 export const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -222,6 +322,7 @@ export const cancelOrder = async (req, res) => {
     }
 
     const order = await Order.findById(id);
+
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -229,10 +330,17 @@ export const cancelOrder = async (req, res) => {
       });
     }
 
-    if (order.status !== "Pending") {
+    if (order.status === "Completed") {
       return res.status(400).json({
         success: false,
-        message: "Order cannot be cancelled",
+        message: "Completed order cannot be cancelled",
+      });
+    }
+
+    if (order.status === "Cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Order already cancelled",
       });
     }
 
@@ -244,35 +352,74 @@ export const cancelOrder = async (req, res) => {
       status: "Cancelled",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Order cancelled",
+      message: "Order cancelled successfully",
       order,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    console.error("❌ Cancel order error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+/* =========================
+   PAY CASH
+========================= */
+export const payCashOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order id",
+      });
+    }
+
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.paymentStatus === "Paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Order already paid",
+      });
+    }
+
+    order.paymentMethod = "Cash";
+    order.paymentStatus = "Paid";
+    order.transactionId = "CASH-" + Date.now();
+
+    await order.save();
+
+    emitSocketEvent("paymentUpdated", {
+      orderId: order._id,
+      paymentStatus: "Paid",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Cash payment successful",
+      order,
+    });
+  } catch (error) {
+    console.error("❌ Cash payment error:", error);
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,14 +1,10 @@
 
 
-
-
 import Joi from "joi";
 
-/**
- * =========================
- * ITEM VALIDATION SCHEMA
- * =========================
- */
+/* =========================
+   ITEM VALIDATION SCHEMA
+========================= */
 const itemSchema = Joi.object({
   itemId: Joi.string().required().messages({
     "any.required": "itemId is required",
@@ -31,11 +27,9 @@ const itemSchema = Joi.object({
   }),
 });
 
-/**
- * =========================
- * ORDER VALIDATION SCHEMA
- * =========================
- */
+/* =========================
+   ORDER VALIDATION SCHEMA
+========================= */
 export const orderValidationSchema = Joi.object({
   orderType: Joi.string()
     .valid("DineIn", "Takeaway")
@@ -62,12 +56,8 @@ export const orderValidationSchema = Joi.object({
     .required()
     .messages({
       "array.min": "At least one item is required",
+      "any.required": "Items are required",
     }),
-
-  totalAmount: Joi.number().min(0).required().messages({
-    "number.base": "Total amount must be a number",
-    "any.required": "Total amount is required",
-  }),
 
   paymentMethod: Joi.string()
     .valid("Cash", "UPI", "Card")

@@ -1,15 +1,12 @@
 
 
 import express from "express";
-// import cors from "cors";
-
-
-// import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 // Routes
+import paymentRoutes from "./routes/paymentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -46,6 +43,7 @@ app.use("/api/v1/menus", menuRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tables", tableRoutes);
+app.use("/api/v1/payment", paymentRoutes);
 
 // Test route
 app.get("/", (req, res) => res.send("🍽️ Smart Restaurant API is running..."));
@@ -62,3 +60,5 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 export default app;
+
+

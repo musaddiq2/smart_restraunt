@@ -1,4 +1,6 @@
 
+
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -12,50 +14,58 @@ export default function OrderSuccess() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelAllowed, setCancelAllowed] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(5); // Start at 5 seconds
+  const [remainingSeconds, setRemainingSeconds] = useState(5);
   const [canceling, setCanceling] = useState(false);
+  const [paying, setPaying] = useState(false);
 
-  // Fetch order details once on mount
+  /* ================= LOAD RAZORPAY SCRIPT ================= */
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  /* ================= FETCH ORDER ================= */
   const fetchOrder = async () => {
     try {
       const res = await axios.get(`${API_BASE}/orders/${orderId}`);
       if (res.data.success) {
         setOrder(res.data.order);
         setCancelAllowed(res.data.cancelAllowed);
-        // If backend sends remainingSeconds, use it; otherwise default to 5
-        setRemainingSeconds(res.data.remainingSeconds || 5);
+        setRemainingSeconds(res.data.remainingSeconds ?? 5);
       }
-    } catch (err) {
+    } catch {
       toast.error("Order not found");
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial fetch + polling for status updates
+  /* ================= INITIAL FETCH + POLLING ================= */
   useEffect(() => {
     fetchOrder();
     const interval = setInterval(fetchOrder, 5000);
     return () => clearInterval(interval);
   }, [orderId]);
 
-  // Local countdown timer (only when cancel is allowed)
+  /* ================= CANCEL COUNTDOWN ================= */
   useEffect(() => {
     if (!cancelAllowed || remainingSeconds <= 0) return;
 
     const timer = setInterval(() => {
-      setRemainingSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setRemainingSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
   }, [cancelAllowed, remainingSeconds]);
 
+  /* ================= CANCEL ORDER ================= */
   const handleCancel = async () => {
     try {
       setCanceling(true);
@@ -71,121 +81,182 @@ export default function OrderSuccess() {
     }
   };
 
+  /* ================= CASH PAYMENT ================= */
+  const handleCashPayment = async () => {
+    try {
+      setPaying(true);
+      const res = await axios.post(
+        `${API_BASE}/orders/${orderId}/pay-cash`
+      );
+      if (res.data.success) {
+        toast.success("Cash payment selected");
+        fetchOrder();
+      }
+    } catch {
+      toast.error("Cash payment failed");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  /* ================= ONLINE PAYMENT ================= */
+  const handleOnlinePayment = async () => {
+    try {
+      setPaying(true);
+
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        toast.error("Razorpay SDK failed to load");
+        setPaying(false);
+        return;
+      }
+
+      const res = await axios.post(
+        `${API_BASE}/payment/create-order`,
+        { amount: order.totalAmount }
+      );
+
+      if (!res.data.success) {
+        toast.error("Unable to initiate payment");
+        setPaying(false);
+        return;
+      }
+
+      const razorpayOrder = res.data.order;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Smart Restaurant",
+        description: "Food Order Payment",
+        order_id: razorpayOrder.id,
+
+        handler: function () {
+          toast.success("Payment successful. Awaiting confirmation...");
+        },
+
+        modal: {
+          ondismiss: function () {
+            toast.info("Payment cancelled");
+            setPaying(false);
+          },
+        },
+
+        prefill: {
+          name: order?.customerName || "",
+          contact: order?.customerMobile || "",
+        },
+
+        theme: {
+          color: "#facc15",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to start payment");
+      setPaying(false);
+    }
+  };
+
+  /* ================= UI ================= */
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#0f172a] text-white">
         Loading...
       </div>
     );
   }
 
-  const statusUI = {
-    Pending: { text: "Order Pending", color: "text-yellow-400", icon: "⏳" },
-    Preparing: { text: "Preparing Food", color: "text-blue-400", icon: "👨‍🍳" },
-    Completed: { text: "Order Completed", color: "text-green-400", icon: "✅" },
-    Cancelled: { text: "Order Cancelled", color: "text-red-400", icon: "❌" },
-  };
-
-  const current = statusUI[order?.status] || statusUI.Pending;
+  const isPaid = order?.paymentStatus === "Paid";
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-md bg-[#1e293b] rounded-2xl p-8 border border-yellow-500 shadow-2xl">
-        {/* Header / Logo */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="text-4xl font-bold text-yellow-400">Smart</div>
-          <div className="ml-2 text-xl">Restaurant</div>
+    <div className="min-h-screen bg-[#0f172a] text-white flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[#1e293b] rounded-2xl p-6 border border-yellow-500 shadow-2xl">
+
+        {/* Header */}
+        <div className="flex justify-center items-center mb-6">
+          <span className="text-4xl font-bold text-yellow-400">Smart</span>
+          <span className="ml-2 text-xl">Restaurant</span>
         </div>
 
-        {/* Success Card */}
-        <div className="bg-[#0f172a] rounded-xl p-6 text-center mb-6">
-          {/* Big Checkmark */}
-          <div className="mx-auto w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mb-4">
-            <svg
-              className="w-12 h-12 text-black"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={4}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-
-          <h1 className="text-2xl font-bold text-yellow-400 mb-2">
+        {/* Order Info */}
+        <div className="bg-[#0f172a] rounded-xl p-5 text-center mb-5">
+          <h1 className="text-2xl font-bold text-yellow-400">
             Order Successful
           </h1>
-          <p className="text-gray-400 mb-4">
+          <p className="text-gray-400 mt-1">
             Order ID: <span className="font-mono">{orderId}</span>
           </p>
 
-          {/* Timer & Cancel Section */}
-          {cancelAllowed && remainingSeconds > 0 ? (
+          {cancelAllowed && remainingSeconds > 0 && (
             <div className="mt-4">
-              <p className="text-red-400 font-medium mb-3">
-                Cancel available for{" "}
-                <span className="font-bold text-red-300">{remainingSeconds}s</span>
+              <p className="text-red-400 mb-2 text-sm">
+                Cancel available for <b>{remainingSeconds}s</b>
               </p>
 
-              {/* Animated Progress Bar */}
-              <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden mb-6">
+              <div className="w-full h-2 bg-gray-700 rounded overflow-hidden mb-3">
                 <div
-                  className="h-full bg-red-600 transition-all duration-1000 ease-linear"
-                  style={{
-                    width: `${(remainingSeconds / 5) * 100}%`,
-                  }}
+                  className="h-full bg-red-600 transition-all duration-1000"
+                  style={{ width: `${(remainingSeconds / 5) * 100}%` }}
                 />
               </div>
 
               <button
                 onClick={handleCancel}
                 disabled={canceling}
-                className={`w-full py-3 px-4 rounded-lg font-bold text-white transition-colors ${
-                  canceling
-                    ? "bg-red-800 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
+                className="w-full py-2 rounded-lg bg-red-600 hover:bg-red-700 transition"
               >
                 {canceling ? "Cancelling..." : "Cancel Order"}
               </button>
             </div>
-          ) : (
-            /* Order Status after timer */
-            <div className="mt-6 animate-pulse-soft">
-              <div className={`text-6xl mb-4 ${current.color}`}>
-                {current.icon}
-              </div>
-              <p className={`text-xl font-bold ${current.color}`}>
-                {current.text}
-              </p>
-            </div>
           )}
         </div>
 
-        {/* Return to Menu Button */}
+        {/* Payment Section */}
+        {!isPaid ? (
+          <div className="bg-[#0f172a] rounded-xl p-5 mb-5">
+            <h2 className="text-lg font-bold text-yellow-400 mb-4">
+              Payment Pending
+            </h2>
+
+            <button
+              onClick={handleOnlinePayment}
+              disabled={paying}
+              className="w-full py-3 mb-3 rounded-lg bg-green-500 hover:bg-green-600 text-black font-bold transition"
+            >
+              Pay Online (UPI / Card)
+            </button>
+
+            <button
+              onClick={handleCashPayment}
+              disabled={paying}
+              className="w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-black font-bold transition"
+            >
+              Pay at Counter (Cash)
+            </button>
+          </div>
+        ) : (
+          <div className="bg-green-900/30 rounded-xl p-4 mb-5 text-center">
+            <p className="text-green-400 font-bold text-lg">
+              Payment Successful ✅
+            </p>
+            <p className="text-gray-300 text-sm">
+              Mode: {order.paymentMethod}
+            </p>
+          </div>
+        )}
+
         <button
           onClick={() => navigate("/")}
-          className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-4 rounded-lg transition-colors"
+          className="w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-black font-bold transition"
         >
           Return to Menu
         </button>
       </div>
-
-      {/* Custom animation */}
-      <style>{`
-        .animate-pulse-soft {
-          animation: pulseSoft 2s infinite ease-in-out;
-        }
-        @keyframes pulseSoft {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-      `}</style>
     </div>
   );
 }

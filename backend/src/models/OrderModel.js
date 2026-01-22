@@ -41,18 +41,28 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Cash", "UPI", "Card"],
-      default: "Cash",
+      enum: ["Cash", "UPI", "Card",null],
+      default: "null",
     },
 
     paymentStatus: {
       type: String,
-      enum: ["Unpaid", "Paid"],
-      default: "Unpaid",
+      // enum: ["Unpaid", "Paid"],
+      enum :  ["Pending", "Paid", "Failed"],
+      default: "Pending",
+
     },
 
+    transactionId: {
+  type: String,
+  default: null,
+},
+
+  
     notes: { type: String, default: "" },
   },
+
+  
   { timestamps: true }
 );
 
