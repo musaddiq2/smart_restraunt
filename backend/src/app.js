@@ -15,6 +15,8 @@ import menuRoutes from "./routes/menuRoutes.js";
 import userRoutes from "./routes/UserRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import tableRoutes from "./routes/tableRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
+import "./cron/subscriptionCron.js";
 
 // Middleware
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -34,7 +36,8 @@ app.use(morgan("dev"));
 // Make uploads folder public
 app.use("/uploads", express.static("uploads"));
 
-// ===== Routes =====
+
+// ✅ API Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/categories", categoryRoutes);
@@ -44,6 +47,10 @@ app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/tables", tableRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/subscriptions", subscriptionRoutes);
+
+
+
 
 // Test route
 app.get("/", (req, res) => res.send("🍽️ Smart Restaurant API is running..."));

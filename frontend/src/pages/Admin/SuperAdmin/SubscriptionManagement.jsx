@@ -1,411 +1,376 @@
-import { CreditCard, Crown, Zap, Shield, TrendingUp, Sparkles, Clock, Star, Gift } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  CreditCard,
+  TrendingUp,
+  Users,
+  AlertCircle,
+  Check,
+  X,
+  Edit2,
+  UserPlus,
+  Download,
+  Search,
+} from "lucide-react";
 
-export default function SubscriptionManagement() {
-  const [floatingIcons, setFloatingIcons] = useState([]);
-  const [activeCard, setActiveCard] = useState(1);
+const SubscriptionManagement = () => {
+  const [selectedTab, setSelectedTab] = useState("plans");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [newPlan, setNewPlan] = useState({
+    name: "",
+    type: "Monthly",
+    price: 0,
+    maxTables: 0,
+    maxOrders: 0,
+    analytics: false,
+  });
 
+  const token = localStorage.getItem("token"); // Replace with your auth token
+
+  // Fetch subscription plans
   useEffect(() => {
-    // Generate random floating icons
-    const icons = Array.from({ length: 10 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 5,
-      duration: 12 + Math.random() * 8,
-      scale: 0.5 + Math.random() * 0.5,
-    }));
-    setFloatingIcons(icons);
+    const fetchPlans = async () => {
+      try {
+     const res = await axios.get("/api/subscriptions/plans", {
+  headers: { Authorization: `Bearer ${token}` },
+});
 
-    // Rotate active card
-    const interval = setInterval(() => {
-      setActiveCard((prev) => (prev % 3) + 1);
-    }, 3000);
+// 🔥 Handle all backend response shapes safely
+const plansData = Array.isArray(res.data)
+  ? res.data
+  : res.data.plans || res.data.data || [];
 
-    return () => clearInterval(interval);
-  }, []);
+setPlans(plansData);
 
-  return (
-    <div className="h-screen overflow-hidden relative bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
-      {/* Animated Background Gradient Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-fuchsia-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      </div>
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchPlans();
+  }, [token]);
 
-      {/* Floating Subscription Icons */}
-      {floatingIcons.map((icon) => (
-        <div
-          key={icon.id}
-          className="absolute opacity-10"
-          style={{
-            left: `${icon.x}%`,
-            top: `${icon.y}%`,
-            animation: `float ${icon.duration}s ease-in-out infinite`,
-            animationDelay: `${icon.delay}s`,
-            transform: `scale(${icon.scale})`,
-          }}
-        >
-          {icon.id % 5 === 0 && <CreditCard size={48} className="text-violet-400" />}
-          {icon.id % 5 === 1 && <Crown size={48} className="text-fuchsia-400" />}
-          {icon.id % 5 === 2 && <Zap size={48} className="text-purple-400" />}
-          {icon.id % 5 === 3 && <Shield size={48} className="text-pink-400" />}
-          {icon.id % 5 === 4 && <Star size={48} className="text-violet-400" />}
-        </div>
-      ))}
+  // Fetch payment history
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const res = await axios.get("/api/subscriptions/payments", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPayments(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchPayments();
+  }, [token]);
 
-      {/* Main Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6">
-        
-        {/* Animated Premium Icon Container */}
-        <div className="relative mb-10">
-          {/* Outer Rotating Ring */}
-          <div className="absolute inset-0 w-44 h-44 -m-10">
-            <div className="w-full h-full rounded-full border-4 border-dashed border-violet-300 animate-spin-slow"></div>
-          </div>
-          
-          {/* Middle Pulsing Ring */}
-          <div className="absolute inset-0 w-36 h-36 -m-6">
-            <div className="w-full h-full border-4 border-fuchsia-200 rounded-full animate-ping opacity-60"></div>
-          </div>
-          
-          {/* Premium Badge Container */}
-          <div className="relative bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-600 p-10 rounded-3xl shadow-2xl animate-float">
-            <CreditCard size={72} className="text-white animate-pulse-slow" />
-            
-            {/* Decorative Crown */}
-            <Crown className="absolute -top-4 -right-4 text-yellow-400 animate-bounce-slow" size={32} />
-            
-            {/* Sparkle Effects */}
-            <Sparkles className="absolute top-2 left-2 text-yellow-300 animate-spin-slow" size={20} />
-            <Sparkles className="absolute bottom-2 right-2 text-yellow-300 animate-spin-slow animation-delay-2000" size={24} />
-            <Zap className="absolute -bottom-3 -left-3 text-yellow-400 animate-pulse" size={28} />
-          </div>
-
-          {/* Orbiting Stars */}
-          <Star className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 text-yellow-400 animate-bounce" size={20} />
-          <Star className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-8 text-fuchsia-400 animate-bounce animation-delay-400" size={18} />
-        </div>
-
-        {/* Title with Premium Gradient */}
-        <h1 className="text-5xl md:text-6xl font-extrabold mb-4 text-center animate-fade-in">
-          <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent animate-gradient-x">
-            Premium Experience
-          </span>
-        </h1>
-
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-700 mb-6 text-center animate-fade-in animation-delay-300">
-          Coming Soon
-        </h2>
-
-        {/* Subtitle with Staggered Animation */}
-        <p className="text-gray-700 text-center text-lg md:text-xl max-w-2xl mb-10 animate-fade-in animation-delay-500">
-          We're crafting an exclusive
-          <span className="font-bold text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text"> Subscription Management </span>
-          platform with premium features designed just for you.
-        </p>
-
-        {/* Subscription Tier Preview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mb-10 animate-fade-in animation-delay-700">
-          <TierCard
-            icon={<Zap size={36} />}
-            tier="Starter"
-            price="$9.99"
-            features={["Basic Analytics", "5 Restaurants", "Email Support"]}
-            color="violet"
-            active={activeCard === 1}
-          />
-          <TierCard
-            icon={<Crown size={36} />}
-            tier="Pro"
-            price="$29.99"
-            features={["Advanced Analytics", "Unlimited Restaurants", "Priority Support"]}
-            color="purple"
-            active={activeCard === 2}
-            popular
-          />
-          <TierCard
-            icon={<Shield size={36} />}
-            tier="Enterprise"
-            price="$99.99"
-            features={["Custom Solutions", "Dedicated Manager", "24/7 Support"]}
-            color="fuchsia"
-            active={activeCard === 3}
-          />
-        </div>
-
-        {/* Feature Highlights */}
-        <div className="flex flex-wrap justify-center gap-4 max-w-4xl mb-8 animate-fade-in animation-delay-1000">
-          <FeatureBadge icon={<TrendingUp size={18} />} text="Real-time Analytics" />
-          <FeatureBadge icon={<Shield size={18} />} text="Secure Payments" />
-          <FeatureBadge icon={<Gift size={18} />} text="Exclusive Perks" />
-          <FeatureBadge icon={<Zap size={18} />} text="Instant Activation" />
-        </div>
-
-        {/* Animated Progress Dots */}
-        <div className="flex items-center gap-3 mb-6 animate-fade-in animation-delay-1200">
-          <span className="w-4 h-4 rounded-full bg-violet-400 animate-bounce"></span>
-          <span className="w-4 h-4 rounded-full bg-purple-500 animate-bounce animation-delay-200"></span>
-          <span className="w-4 h-4 rounded-full bg-fuchsia-600 animate-bounce animation-delay-400"></span>
-        </div>
-
-        {/* Launch Date */}
-        <div className="flex items-center gap-3 text-gray-600 animate-fade-in animation-delay-1500">
-          <Clock size={20} className="animate-spin-slow text-violet-500" />
-          <span className="text-sm">Launching in</span>
-          <span className="font-bold text-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-            Q1 2025
-          </span>
-        </div>
-
-        {/* Notify Me Button */}
-        <button className="mt-8 px-8 py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white font-bold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 animate-fade-in animation-delay-1800 relative overflow-hidden group">
-          <span className="relative z-10 flex items-center gap-2">
-            <Crown size={20} />
-            Notify Me When Available
-          </span>
-          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-        </button>
-      </div>
-
-      {/* Bottom Decoration Wave */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none">
-        <svg className="absolute bottom-0 w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".15" className="fill-violet-300"></path>
-          <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" className="fill-purple-300"></path>
-          <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" className="fill-fuchsia-200"></path>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-/* Tier Card Component */
-function TierCard({ icon, tier, price, features, color, active, popular }) {
-  const colors = {
-    violet: 'from-violet-500 to-violet-600',
-    purple: 'from-purple-500 to-purple-600',
-    fuchsia: 'from-fuchsia-500 to-fuchsia-600',
-  };
-
-  const borderColors = {
-    violet: 'border-violet-300 ring-violet-200',
-    purple: 'border-purple-300 ring-purple-200',
-    fuchsia: 'border-fuchsia-300 ring-fuchsia-200',
+  // Create a new subscription plan
+  const handleCreatePlan = async () => {
+    try {
+      const res = await axios.post(
+        "/api/subscriptions/plans",
+        newPlan,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPlans([...plans, res.data]);
+      setShowCreateModal(false);
+      setNewPlan({ name: "", type: "Monthly", price: 0, maxTables: 0, maxOrders: 0, analytics: false });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create plan.");
+    }
   };
 
   return (
-    <div
-      className={`relative bg-white/90 backdrop-blur-lg rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-500 border-2 ${
-        active ? `${borderColors[color]} ring-4 -translate-y-2 scale-105` : 'border-gray-200 hover:-translate-y-1'
-      }`}
-    >
-      {/* Popular Badge */}
-      {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="px-4 py-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-xs font-bold text-white rounded-full shadow-lg flex items-center gap-1">
-            <Star size={12} />
-            POPULAR
-          </span>
-        </div>
-      )}
-
-      {/* Animated Glow */}
-      {active && (
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors[color]} opacity-5 rounded-2xl animate-pulse`}></div>
-      )}
-
-      <div className="relative">
-        {/* Icon */}
-        <div className={`inline-flex p-4 rounded-xl mb-4 bg-gradient-to-br ${colors[color]} shadow-lg transform hover:scale-110 transition-transform duration-300`}>
-          <div className="text-white">{icon}</div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+              <div className="bg-gradient-to-br from-violet-500 to-purple-600 p-3 rounded-xl shadow-lg">
+                <CreditCard className="text-white" size={32} />
+              </div>
+              Subscription Management
+            </h1>
+            <p className="text-slate-600 text-lg">Manage plans, assignments, payments & invoices</p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-gradient-to-r from-violet-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            Create Plan
+          </button>
         </div>
 
-        {/* Tier Name */}
-        <h3 className="text-2xl font-bold text-gray-800 mb-2">{tier}</h3>
-
-        {/* Price */}
-        <div className="mb-6">
-          <span className={`text-4xl font-extrabold bg-gradient-to-r ${colors[color]} bg-clip-text text-transparent`}>
-            {price}
-          </span>
-          <span className="text-gray-500">/month</span>
+        {/* Tabs */}
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 mb-8 p-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedTab("plans")}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
+                selectedTab === "plans"
+                  ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Subscription Plans
+            </button>
+            <button
+              onClick={() => setSelectedTab("payments")}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
+                selectedTab === "payments"
+                  ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Payment History
+            </button>
+          </div>
         </div>
 
-        {/* Features */}
-        <ul className="space-y-3 mb-6">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
-              <Zap size={16} className={`text-${color}-500 flex-shrink-0 mt-0.5`} />
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
+        {/* Plans Grid */}
+        {selectedTab === "plans" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {plans.map((plan) => (
+              <div
+                key={plan._id}
+                className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div className={`bg-gradient-to-r ${plan.color || "from-violet-500 to-purple-600"} p-6 text-white`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold">{plan.name}</h3>
+                    <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold">
+                      {plan.status || "Active"}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold">₹{plan.price.toLocaleString()}</span>
+                    <span className="text-white/80 text-lg">/ {plan.type}</span>
+                  </div>
+                </div>
 
-        {/* CTA Button */}
-        <button className={`w-full py-3 bg-gradient-to-r ${colors[color]} text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}>
-          Coming Soon
-        </button>
+                <div className="p-6">
+                  <div className="mb-4 flex items-center gap-2 text-sm text-slate-600">
+                    <Users size={16} />
+                    <span>{plan.subscribers || 0} active subscribers</span>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-3 text-slate-700">
+                      <Check className="text-green-500 flex-shrink-0" size={20} />
+                      <span>{plan.maxTables === -1 ? "Unlimited" : plan.maxTables} Tables</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-700">
+                      <Check className="text-green-500 flex-shrink-0" size={20} />
+                      <span>{plan.maxOrders === -1 ? "Unlimited" : plan.maxOrders} Orders/Day</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-700">
+                      {plan.analytics ? (
+                        <Check className="text-green-500 flex-shrink-0" size={20} />
+                      ) : (
+                        <X className="text-slate-400 flex-shrink-0" size={20} />
+                      )}
+                      <span>Analytics Access</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-semibold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                      <UserPlus size={18} />
+                      Assign
+                    </button>
+                    <button className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 text-white py-2.5 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                      <Edit2 size={18} />
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Payment History */}
+        {selectedTab === "payments" && (
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                💰 Payment History
+              </h3>
+              <div className="flex gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Search payments..."
+                    className="pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+                <button className="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-semibold hover:bg-slate-200 transition-colors flex items-center gap-2">
+                  <Download size={18} />
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Restaurant</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Plan</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Amount</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Date</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Status</th>
+                    <th className="text-left py-4 px-6 font-semibold text-slate-700">Invoice</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((payment) => (
+                    <tr key={payment._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-6 font-medium text-slate-800">{payment.restaurant}</td>
+                      <td className="py-4 px-6 text-slate-600">{payment.plan}</td>
+                      <td className="py-4 px-6 font-semibold text-slate-800">₹{payment.amount.toLocaleString()}</td>
+                      <td className="py-4 px-6 text-slate-600">{new Date(payment.date).toLocaleDateString()}</td>
+                      <td className="py-4 px-6">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                            payment.status === "paid"
+                              ? "bg-green-100 text-green-700"
+                              : payment.status === "pending"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        {payment.status === "paid" ? (
+                          <button className="text-violet-600 hover:text-violet-700 font-semibold flex items-center gap-1">
+                            <Download size={16} />
+                            Download
+                          </button>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Create Plan Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-violet-600 to-purple-600 p-6 text-white">
+                <h3 className="text-2xl font-bold">Create Subscription Plan</h3>
+                <p className="text-white/80 mt-1">Define a new subscription plan for restaurants</p>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Plan Name</label>
+                  <input
+                    type="text"
+                    value={newPlan.name}
+                    onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                    placeholder="e.g. Premium"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Billing Type</label>
+                    <select
+                      value={newPlan.type}
+                      onChange={(e) => setNewPlan({ ...newPlan, type: e.target.value })}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    >
+                      <option>Monthly</option>
+                      <option>Yearly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Price (₹)</label>
+                    <input
+                      type="number"
+                      value={newPlan.price}
+                      onChange={(e) => setNewPlan({ ...newPlan, price: parseInt(e.target.value) })}
+                      placeholder="999"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Max Tables</label>
+                    <input
+                      type="number"
+                      value={newPlan.maxTables}
+                      onChange={(e) => setNewPlan({ ...newPlan, maxTables: parseInt(e.target.value) })}
+                      placeholder="10"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Max Orders/Day</label>
+                    <input
+                      type="number"
+                      value={newPlan.maxOrders}
+                      onChange={(e) => setNewPlan({ ...newPlan, maxOrders: parseInt(e.target.value) })}
+                      placeholder="100"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newPlan.analytics}
+                      onChange={(e) => setNewPlan({ ...newPlan, analytics: e.target.checked })}
+                      className="w-5 h-5 text-violet-600 rounded focus:ring-2 focus:ring-violet-500"
+                    />
+                    <div>
+                      <span className="font-semibold text-slate-700">Analytics Access</span>
+                      <p className="text-sm text-slate-600">Enable advanced analytics and reporting features</p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreatePlan}
+                    className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Create Plan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
-/* Feature Badge Component */
-function FeatureBadge({ icon, text }) {
-  return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-lg rounded-full shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-violet-300 hover:-translate-y-1">
-      <div className="text-violet-600">{icon}</div>
-      <span className="text-sm font-medium text-gray-700">{text}</span>
-    </div>
-  );
-}
-
-// Add custom animations
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes blob {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    33% {
-      transform: translate(30px, -50px) scale(1.1);
-    }
-    66% {
-      transform: translate(-20px, 20px) scale(0.9);
-    }
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0) rotate(0deg);
-    }
-    50% {
-      transform: translateY(-30px) rotate(15deg);
-    }
-  }
-
-  @keyframes spin-slow {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes bounce-slow {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-15px);
-    }
-  }
-
-  @keyframes pulse-slow {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  @keyframes gradient-x {
-    0%, 100% {
-      background-size: 200% 200%;
-      background-position: left center;
-    }
-    50% {
-      background-size: 200% 200%;
-      background-position: right center;
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-blob {
-    animation: blob 7s infinite;
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-spin-slow {
-    animation: spin-slow 4s linear infinite;
-  }
-
-  .animate-bounce-slow {
-    animation: bounce-slow 2s ease-in-out infinite;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse-slow 3s ease-in-out infinite;
-  }
-
-  .animate-gradient-x {
-    animation: gradient-x 3s ease infinite;
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.8s ease-out forwards;
-  }
-
-  .animation-delay-200 {
-    animation-delay: 0.2s;
-  }
-
-  .animation-delay-300 {
-    animation-delay: 0.3s;
-  }
-
-  .animation-delay-400 {
-    animation-delay: 0.4s;
-  }
-
-  .animation-delay-500 {
-    animation-delay: 0.5s;
-  }
-
-  .animation-delay-700 {
-    animation-delay: 0.7s;
-  }
-
-  .animation-delay-1000 {
-    animation-delay: 1s;
-  }
-
-  .animation-delay-1200 {
-    animation-delay: 1.2s;
-  }
-
-  .animation-delay-1500 {
-    animation-delay: 1.5s;
-  }
-
-  .animation-delay-1800 {
-    animation-delay: 1.8s;
-  }
-
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-
-  .animation-delay-4000 {
-    animation-delay: 4s;
-  }
-`;
-document.head.appendChild(style);
+export default SubscriptionManagement;

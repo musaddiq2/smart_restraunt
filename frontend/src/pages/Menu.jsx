@@ -1,56 +1,27 @@
 
-
-
-
-// src/pages/Menu.jsx
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { FaShoppingCart } from "react-icons/fa";
-import { useCart } from "../context/CartContext";
-import axios from "axios";
-import toast from "react-hot-toast";
-
-/* ===================== Animations ===================== */
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.4 },
-  }),
-};
-
-/* ===================== Section ===================== */
-const Section = ({ title, data }) => {
+/* ===================== Menu Section ===================== */
+const MenuSection = ({ title, items }) => {
   const { cart, setCart } = useCart();
 
   const handleAddToCart = (item) => {
-    if (!setCart) {
-      console.error("❌ setCart not found in CartContext");
-      toast.error("Cart system error");
-      return;
-    }
+    setCart((prevCart) => {
+      const prevItems = prevCart.items || [];
 
-    setCart((prev) => {
-      const items = prev?.items || [];
-
-      const existingItem = items.find(
+      const existingItem = prevItems.find(
         (i) => i.itemId === item._id
       );
 
       let updatedItems;
 
       if (existingItem) {
-        // Increase quantity
-        updatedItems = items.map((i) =>
+        updatedItems = prevItems.map((i) =>
           i.itemId === item._id
             ? { ...i, quantity: i.quantity + 1 }
             : i
         );
       } else {
-        // Add new item
         updatedItems = [
-          ...items,
+          ...prevItems,
           {
             itemId: item._id,
             name: item.name,
@@ -62,8 +33,9 @@ const Section = ({ title, data }) => {
       }
 
       return {
-        ...prev,
+        ...prevCart,
         items: updatedItems,
+        updatedAt: Date.now(),
       };
     });
 
@@ -83,8 +55,8 @@ const Section = ({ title, data }) => {
         {title}
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        {data.map((item, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((item, i) => (
           <motion.div
             key={item._id}
             custom={i}
@@ -141,7 +113,7 @@ const Section = ({ title, data }) => {
 };
 
 /* ===================== Menu Page ===================== */
-const Menu = () => {
+export default function Menu() {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -154,7 +126,7 @@ const Menu = () => {
         setMenuItems(res.data?.data || []);
       } catch (err) {
         console.error(err);
-        setError("Failed to load menu");
+        setError("Failed to load menu. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -165,19 +137,25 @@ const Menu = () => {
 
   const categories = [...new Set(menuItems.map((i) => i.category))];
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-yellow-400 text-2xl">
-        Loading Menu...
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+        <p className="text-yellow-400 text-xl font-semibold">
+          Loading Menu...
+        </p>
       </div>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-400 text-xl">
-        {error}
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+        <p className="text-red-400 text-xl font-semibold">
+          {error}
+        </p>
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f172a] to-[#1e293b] py-20 px-4 sm:px-12 text-white">
@@ -187,15 +165,13 @@ const Menu = () => {
         </h1>
 
         {categories.map((cat) => (
-          <Section
+          <MenuSection
             key={cat}
             title={cat}
-            data={menuItems.filter((i) => i.category === cat)}
+            items={menuItems.filter((i) => i.category === cat)}
           />
         ))}
       </div>
     </div>
   );
-};
-
-export default Menu;
+}
